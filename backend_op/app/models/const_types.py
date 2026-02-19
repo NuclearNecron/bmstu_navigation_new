@@ -18,6 +18,9 @@ class ObjectType(db):
     colour = Column(String(50), nullable=False)
 
     children = relationship("ObjectType")
+    kinds_of_type = relationship(
+        "ObjectKind", back_populates="type_of_kind", foreign_keys="ObjectKind.type_id"
+    )
 
 
 class ObjectKind(db):
@@ -37,6 +40,13 @@ class ObjectKind(db):
     colour = Column(String(50), nullable=False)
 
     children = relationship("ObjectKind")
+    type_of_kind = relationship(
+        "ObjectType", back_populates="kinds_of_type", foreign_keys="ObjectKind.type_id"
+    )
+    objects_of_kind = relationship(
+        "Object", back_populates="kind_of_object", foreign_keys="Object.kind_id"
+    )
+
 
 class ObjectState(db):
     __tablename__ = "object_state"
@@ -47,6 +57,9 @@ class ObjectState(db):
     full_name = Column(String(100), unique=True, nullable=False)
     description = Column(Text, nullable=True)
     colour = Column(String(50), nullable=False)
+    objects_of_state = relationship(
+        "Object", back_populates="state_of_object", foreign_keys="Object.state_id"
+    )
 
 
 class ConnectionType(db):
@@ -59,3 +72,14 @@ class ConnectionType(db):
     description = Column(Text, nullable=True)
     colour = Column(String(50), nullable=False)
     style = Column(Text, nullable=True)
+
+    obj_connection_of_types = relationship(
+        "ConnectionObject",
+        back_populates="type_of_connections",
+        foreign_keys="ConnectionObject.connection_type_id",
+    )
+    node_connection_of_types = relationship(
+        "ConnectionNode",
+        back_populates="type_of_connections",
+        foreign_keys="ConnectionNode.connection_type_id",
+    )

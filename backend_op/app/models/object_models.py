@@ -29,6 +29,20 @@ class Object(db):
     SVG = Column(Text, nullable=True)
 
     children = relationship("Object")
+    kind_of_object = relationship(
+        "ObjectKind", back_populates="objects_of_kind", foreign_keys="Object.kind_id"
+    )
+    state_of_object = relationship(
+        "ObjectState", back_populates="objects_of_state", foreign_keys="Object.state_id"
+    )
+    connections = relationship(
+        "ConnectionObject",
+        back_populates="objects",
+        foreign_keys=["ConnectionObject.object_id1", "ConnectionObject.object_id2"],
+    )
+    nodes_of_object = relationship(
+        "Node", back_populates="object_of_node", foreign_keys="Node.object_id"
+    )
 
 
 class ConnectionObject(db):
@@ -45,3 +59,14 @@ class ConnectionObject(db):
         Integer, ForeignKey("connection_type.id"), nullable=True
     )
     distance = Column(Float, nullable=False)
+
+    objects = relationship(
+        "Object",
+        back_populates="connections",
+        foreign_keys=["ConnectionObject.object_id1", "ConnectionObject.object_id2"],
+    )
+    type_of_connections = relationship(
+        "ConnectionType",
+        back_populates="obj_connection_of_types",
+        foreign_keys="ConnectionObject.connection_type_id",
+    )
