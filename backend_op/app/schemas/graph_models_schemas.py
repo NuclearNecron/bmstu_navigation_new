@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class NodeTypeSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     number: int
     short_name: str
@@ -11,7 +13,27 @@ class NodeTypeSchema(BaseModel):
     size: float
 
 
+class NodeTypeCreateSchema(BaseModel):
+    number: int
+    short_name: str
+    full_name: str
+    description: str | None = None
+    colour: str
+    size: float
+
+
+class NodeTypeUpdateSchema(BaseModel):
+    number: int | None = None
+    short_name: str | None = None
+    full_name: str | None = None
+    description: str | None = None
+    colour: str | None = None
+    size: float | None = None
+
+
 class NodeSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     parent_id: int | None
     object_id: int
@@ -25,9 +47,51 @@ class NodeSchema(BaseModel):
     z: float | None
 
 
+class NodeCreateSchema(BaseModel):
+    parent_id: int | None = None
+    object_id: int
+    type_id: int
+    number: int
+    short_name: str
+    full_name: str
+    SVG: str | None = None
+    x: float | None = None
+    y: float | None = None
+    z: float | None = None
+
+
+class NodeUpdateSchema(BaseModel):
+    parent_id: int | None = None
+    object_id: int | None = None
+    type_id: int | None = None
+    number: int | None = None
+    short_name: str | None = None
+    full_name: str | None = None
+    SVG: str | None = None
+    x: float | None = None
+    y: float | None = None
+    z: float | None = None
+
+
 class ConnectionNodeSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     node_id1: int
     node_id2: int
     connection_type_id: int | None
     distance: float
+
+
+class ConnectionNodeCreateSchema(BaseModel):
+    node_id1: int
+    node_id2: int
+    connection_type_id: int | None = None
+    distance: float
+
+
+class ConnectionNodeUpdateSchema(BaseModel):
+    node_id1: int | None = None
+    node_id2: int | None = None
+    connection_type_id: int | None = None
+    distance: float | None = None

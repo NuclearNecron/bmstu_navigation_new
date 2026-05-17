@@ -1,8 +1,27 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class ObjectTypeSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
+    parent_id: int | None
+    number: int
+    short_name: str
+    full_name: str
+    description: str | None
+    colour: str
+
+
+class ObjectTypeCreateSchema(BaseModel):
+    parent_id: int | None
+    number: int
+    short_name: str
+    full_name: str
+    description: str | None
+    colour: str
+
+
+class ObjectTypeEditSchema(BaseModel):
     parent_id: int | None
     number: int | None
     short_name: str | None
@@ -12,6 +31,8 @@ class ObjectTypeSchema(BaseModel):
 
 
 class ObjectKindSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     parent_id: int | None
     type_id: int
@@ -22,7 +43,29 @@ class ObjectKindSchema(BaseModel):
     colour: str
 
 
+class ObjectKindCreateSchema(BaseModel):
+    parent_id: int | None = None
+    type_id: int
+    number: int
+    short_name: str
+    full_name: str
+    description: str | None = None
+    colour: str
+
+
+class ObjectKindUpdateSchema(BaseModel):
+    parent_id: int | None = None
+    type_id: int | None = None
+    number: int | None = None
+    short_name: str | None = None
+    full_name: str | None = None
+    description: str | None = None
+    colour: str | None = None
+
+
 class ObjectStateSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     number: int
     short_name: str
@@ -31,7 +74,25 @@ class ObjectStateSchema(BaseModel):
     colour: str
 
 
+class ObjectStateCreateSchema(BaseModel):
+    number: int
+    short_name: str
+    full_name: str
+    description: str | None = None
+    colour: str
+
+
+class ObjectStateUpdateSchema(BaseModel):
+    number: int | None = None
+    short_name: str | None = None
+    full_name: str | None = None
+    description: str | None = None
+    colour: str | None = None
+
+
 class ConnectionTypeSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     number: int
     short_name: str
@@ -39,3 +100,21 @@ class ConnectionTypeSchema(BaseModel):
     description: str | None
     colour: str
     style: str | None
+
+
+class ConnectionTypeCreateSchema(BaseModel):
+    number: int
+    short_name: str
+    full_name: str
+    description: str | None = None
+    colour: str
+    style: str | None = None
+
+
+class ConnectionTypeUpdateSchema(BaseModel):
+    number: int | None = None
+    short_name: str | None = None
+    full_name: str | None = None
+    description: str | None = None
+    colour: str | None = None
+    style: str | None = None
