@@ -1,8 +1,10 @@
 import logging
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend_op.app.base.base_handler import BaseHandler
+from backend_op.app.base.base_schemas import DeleteSchema, GetSchema, Pagination
 from backend_op.app.models.const_types import ConnectionType
 from backend_op.app.schemas.const_types_schemas import (
     ConnectionTypeCreateSchema,
@@ -31,17 +33,16 @@ class ConnectionTypeHandler(
         return ConnectionTypeSchema.model_validate(instance)
 
     async def update(
-        self,
-        session: AsyncSession,
-        entity_id: int,
-        data: ConnectionTypeUpdateSchema,
+        self, session: AsyncSession, data: ConnectionTypeUpdateSchema
     ) -> ConnectionTypeSchema | None:
-        log.info("Обновляем запись ConnectionType id=%s", entity_id)
-        instance = await session.get(ConnectionType, entity_id)
+        log.info("Обновляем запись ConnectionType id=%s", data.id)
+        instance = await session.get(ConnectionType, data.id)
         if instance is None:
             return None
 
-        for field, value in data.model_dump(exclude_unset=True).items():
+        for field, value in data.model_dump(
+            exclude_unset=True, exclude={"id"}
+        ).items():
             setattr(instance, field, value)
 
         await session.commit()
@@ -49,20 +50,48 @@ class ConnectionTypeHandler(
         return ConnectionTypeSchema.model_validate(instance)
 
     async def get(
-        self, session: AsyncSession, entity_id: int
+        self, session: AsyncSession, entity: GetSchema
     ) -> ConnectionTypeSchema | None:
-        log.info("Получаем запись ConnectionType id=%s", entity_id)
-        instance = await session.get(ConnectionType, entity_id)
+        log.info("Получаем запись ConnectionType id=%s", entity.id)
+        instance = await session.get(ConnectionType, entity.id)
         if instance is None:
             return None
         return ConnectionTypeSchema.model_validate(instance)
 
-    async def delete(self, session: AsyncSession, entity_id: int) -> bool:
-        log.info("Удаляем запись ConnectionType id=%s", entity_id)
-        instance = await session.get(ConnectionType, entity_id)
+    async def delete(self, session: AsyncSession, entity: DeleteSchema) -> bool:
+        log.info("Удаляем запись ConnectionType id=%s", entity.id)
+        instance = await session.get(ConnectionType, entity.id)
         if instance is None:
             return False
 
         await session.delete(instance)
         await session.commit()
         return True
+
+    async def get_all(self, session: AsyncSession) -> list[ConnectionTypeSchema]:
+        log.info("Получаем все записи ConnectionType")
+        query = select(ConnectionType)
+        result = await session.execute(query)
+        return [
+            ConnectionTypeSchema.model_validate(row)
+            for row in result.scalars().all()
+        ]
+
+    async def get_paginated(
+        self, session: AsyncSession, pagination: Pagination
+    ) -> list[ConnectionTypeSchema]:
+        log.info(
+            "Получаем записи ConnectionType page=%s limit=%s",
+            pagination.page,
+            pagination.limit,
+        )
+        query = (
+            select(ConnectionType)
+            .offset((pagination.page - 1) * pagination.limit)
+            .limit(pagination.limit)
+        )
+        result = await session.execute(query)
+        return [
+            ConnectionTypeSchema.model_validate(row)
+            for row in result.scalars().all()
+        ]

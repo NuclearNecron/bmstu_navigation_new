@@ -1,8 +1,10 @@
 import logging
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend_op.app.base.base_handler import BaseHandler
+from backend_op.app.base.base_schemas import DeleteSchema, GetSchema, Pagination
 from backend_op.app.models.const_types import ObjectKind
 from backend_op.app.schemas.const_types_schemas import (
     ObjectKindCreateSchema,
@@ -27,17 +29,16 @@ class ObjectKindHandler(
         return ObjectKindSchema.model_validate(instance)
 
     async def update(
-        self,
-        session: AsyncSession,
-        entity_id: int,
-        data: ObjectKindUpdateSchema,
+        self, session: AsyncSession, data: ObjectKindUpdateSchema
     ) -> ObjectKindSchema | None:
-        log.info("Обновляем запись ObjectKind id=%s", entity_id)
-        instance = await session.get(ObjectKind, entity_id)
+        log.info("Обновляем запись ObjectKind id=%s", data.id)
+        instance = await session.get(ObjectKind, data.id)
         if instance is None:
             return None
 
-        for field, value in data.model_dump(exclude_unset=True).items():
+        for field, value in data.model_dump(
+            exclude_unset=True, exclude={"id"}
+        ).items():
             setattr(instance, field, value)
 
         await session.commit()
@@ -45,20 +46,48 @@ class ObjectKindHandler(
         return ObjectKindSchema.model_validate(instance)
 
     async def get(
-        self, session: AsyncSession, entity_id: int
+        self, session: AsyncSession, entity: GetSchema
     ) -> ObjectKindSchema | None:
-        log.info("Получаем запись ObjectKind id=%s", entity_id)
-        instance = await session.get(ObjectKind, entity_id)
+        log.info("Получаем запись ObjectKind id=%s", entity.id)
+        instance = await session.get(ObjectKind, entity.id)
         if instance is None:
             return None
         return ObjectKindSchema.model_validate(instance)
 
-    async def delete(self, session: AsyncSession, entity_id: int) -> bool:
-        log.info("Удаляем запись ObjectKind id=%s", entity_id)
-        instance = await session.get(ObjectKind, entity_id)
+    async def delete(self, session: AsyncSession, entity: DeleteSchema) -> bool:
+        log.info("Удаляем запись ObjectKind id=%s", entity.id)
+        instance = await session.get(ObjectKind, entity.id)
         if instance is None:
             return False
 
         await session.delete(instance)
         await session.commit()
         return True
+
+    async def get_all(self, session: AsyncSession) -> list[ObjectKindSchema]:
+        log.info("Получаем все записи ObjectKind")
+        query = select(ObjectKind)
+        result = await session.execute(query)
+        return [
+            ObjectKindSchema.model_validate(row)
+            for row in result.scalars().all()
+        ]
+
+    async def get_paginated(
+        self, session: AsyncSession, pagination: Pagination
+    ) -> list[ObjectKindSchema]:
+        log.info(
+            "Получаем записи ObjectKind page=%s limit=%s",
+            pagination.page,
+            pagination.limit,
+        )
+        query = (
+            select(ObjectKind)
+            .offset((pagination.page - 1) * pagination.limit)
+            .limit(pagination.limit)
+        )
+        result = await session.execute(query)
+        return [
+            ObjectKindSchema.model_validate(row)
+            for row in result.scalars().all()
+        ]

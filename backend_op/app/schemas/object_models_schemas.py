@@ -37,6 +37,7 @@ class ObjectCreateSchema(BaseModel):
 
 
 class ObjectUpdateSchema(BaseModel):
+    id: int
     parent_id: int | None = None
     kind_id: int | None = None
     state_id: int | None = None
@@ -70,6 +71,7 @@ class ConnectionObjectCreateSchema(BaseModel):
 
 
 class ConnectionObjectUpdateSchema(BaseModel):
+    id: int
     object_id1: int | None = None
     object_id2: int | None = None
     connection_type_id: int | None = None

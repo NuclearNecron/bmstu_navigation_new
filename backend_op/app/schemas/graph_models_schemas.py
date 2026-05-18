@@ -23,6 +23,7 @@ class NodeTypeCreateSchema(BaseModel):
 
 
 class NodeTypeUpdateSchema(BaseModel):
+    id: int
     number: int | None = None
     short_name: str | None = None
     full_name: str | None = None
@@ -61,6 +62,7 @@ class NodeCreateSchema(BaseModel):
 
 
 class NodeUpdateSchema(BaseModel):
+    id: int
     parent_id: int | None = None
     object_id: int | None = None
     type_id: int | None = None
@@ -91,6 +93,7 @@ class ConnectionNodeCreateSchema(BaseModel):
 
 
 class ConnectionNodeUpdateSchema(BaseModel):
+    id: int
     node_id1: int | None = None
     node_id2: int | None = None
     connection_type_id: int | None = None

@@ -13,21 +13,22 @@ class ObjectTypeSchema(BaseModel):
 
 
 class ObjectTypeCreateSchema(BaseModel):
-    parent_id: int | None
+    parent_id: int | None = None
     number: int
     short_name: str
     full_name: str
-    description: str | None
+    description: str | None = None
     colour: str
 
 
 class ObjectTypeEditSchema(BaseModel):
-    parent_id: int | None
-    number: int | None
-    short_name: str | None
-    full_name: str | None
-    description: str | None
-    colour: str | None
+    id: int
+    parent_id: int | None = None
+    number: int | None = None
+    short_name: str | None = None
+    full_name: str | None = None
+    description: str | None = None
+    colour: str | None = None
 
 
 class ObjectKindSchema(BaseModel):
@@ -54,6 +55,7 @@ class ObjectKindCreateSchema(BaseModel):
 
 
 class ObjectKindUpdateSchema(BaseModel):
+    id: int
     parent_id: int | None = None
     type_id: int | None = None
     number: int | None = None
@@ -83,6 +85,7 @@ class ObjectStateCreateSchema(BaseModel):
 
 
 class ObjectStateUpdateSchema(BaseModel):
+    id: int
     number: int | None = None
     short_name: str | None = None
     full_name: str | None = None
@@ -112,6 +115,7 @@ class ConnectionTypeCreateSchema(BaseModel):
 
 
 class ConnectionTypeUpdateSchema(BaseModel):
+    id: int
     number: int | None = None
     short_name: str | None = None
     full_name: str | None = None
