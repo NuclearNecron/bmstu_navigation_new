@@ -1,8 +1,8 @@
 from fastapi import Body, Path, Query
 from pydantic import BaseModel
 
-from backend_op.app.base.base_schemas import DeleteSchema, GetSchema, Pagination
-from backend_op.app.schemas.const_types_schemas import (
+from app.base.base_schemas import DeleteSchema, GetSchema, Pagination
+from app.schemas.const_types_schemas import (
     ObjectTypeCreateSchema,
     ObjectTypeEditSchema,
 )
@@ -57,6 +57,13 @@ class ObjectTypeUpdateParams(BaseModel):
 
     def to_edit_schema(self) -> ObjectTypeEditSchema:
         return ObjectTypeEditSchema.model_validate(self.model_dump())
+
+
+class ObjectTypeGetChildrenParams(BaseModel):
+    parent_id: int
+
+    def to_get_children_schema(self) -> GetSchema:
+        return GetSchema(id=self.parent_id)
 
 
 def get_object_type_get_all_params() -> ObjectTypeGetAllParams:
@@ -126,3 +133,9 @@ def get_object_type_update_params(
         description=description,
         colour=colour,
     )
+
+
+def get_object_type_get_children_params(
+    parent_id: int = Path(..., description="Идентификатор родительского типа объекта", ge=1),
+) -> ObjectTypeGetChildrenParams:
+    return ObjectTypeGetChildrenParams(parent_id=parent_id)

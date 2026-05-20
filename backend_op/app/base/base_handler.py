@@ -4,7 +4,7 @@ from typing import Generic, TypeVar
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend_op.app.base.base_schemas import DeleteSchema, GetSchema, Pagination
+from app.base.base_schemas import DeleteSchema, GetSchema, Pagination
 
 CreateT = TypeVar("CreateT", bound=BaseModel)
 UpdateT = TypeVar("UpdateT", bound=BaseModel)

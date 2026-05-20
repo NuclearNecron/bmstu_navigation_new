@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 
 db = declarative_base()
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '..', 'db.env')) # noqa
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '..', '.env')) # noqa
 
 
 db_engine = create_async_engine(

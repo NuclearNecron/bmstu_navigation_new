@@ -1,4 +1,4 @@
-from backend_op.app.params.connection_node_params import (
+from app.params.connection_node_params import (
     ConnectionNodeCreateParams,
     ConnectionNodeDeleteParams,
     ConnectionNodeGetAllParams,
@@ -12,7 +12,7 @@ from backend_op.app.params.connection_node_params import (
     get_connection_node_paginated_params,
     get_connection_node_update_params,
 )
-from backend_op.app.params.connection_object_params import (
+from app.params.connection_object_params import (
     ConnectionObjectCreateParams,
     ConnectionObjectDeleteParams,
     ConnectionObjectGetAllParams,
@@ -26,7 +26,7 @@ from backend_op.app.params.connection_object_params import (
     get_connection_object_paginated_params,
     get_connection_object_update_params,
 )
-from backend_op.app.params.connection_type_params import (
+from app.params.connection_type_params import (
     ConnectionTypeCreateParams,
     ConnectionTypeDeleteParams,
     ConnectionTypeGetAllParams,
@@ -40,7 +40,7 @@ from backend_op.app.params.connection_type_params import (
     get_connection_type_paginated_params,
     get_connection_type_update_params,
 )
-from backend_op.app.params.node_params import (
+from app.params.node_params import (
     NodeCreateParams,
     NodeDeleteParams,
     NodeGetAllParams,
@@ -54,7 +54,7 @@ from backend_op.app.params.node_params import (
     get_node_paginated_params,
     get_node_update_params,
 )
-from backend_op.app.params.node_type_params import (
+from app.params.node_type_params import (
     NodeTypeCreateParams,
     NodeTypeDeleteParams,
     NodeTypeGetAllParams,
@@ -68,7 +68,7 @@ from backend_op.app.params.node_type_params import (
     get_node_type_paginated_params,
     get_node_type_update_params,
 )
-from backend_op.app.params.object_kind_params import (
+from app.params.object_kind_params import (
     ObjectKindCreateParams,
     ObjectKindDeleteParams,
     ObjectKindGetAllParams,
@@ -81,8 +81,9 @@ from backend_op.app.params.object_kind_params import (
     get_object_kind_get_params,
     get_object_kind_paginated_params,
     get_object_kind_update_params,
+    get_object_kind_get_children_params,
 )
-from backend_op.app.params.object_params import (
+from app.params.object_params import (
     ObjectCreateParams,
     ObjectDeleteParams,
     ObjectGetAllParams,
@@ -95,8 +96,9 @@ from backend_op.app.params.object_params import (
     get_object_get_params,
     get_object_paginated_params,
     get_object_update_params,
+    get_object_get_children_params,
 )
-from backend_op.app.params.object_state_params import (
+from app.params.object_state_params import (
     ObjectStateCreateParams,
     ObjectStateDeleteParams,
     ObjectStateGetAllParams,
@@ -110,7 +112,7 @@ from backend_op.app.params.object_state_params import (
     get_object_state_paginated_params,
     get_object_state_update_params,
 )
-from backend_op.app.params.object_type_params import (
+from app.params.object_type_params import (
     ObjectTypeCreateParams,
     ObjectTypeDeleteParams,
     ObjectTypeGetAllParams,
@@ -123,6 +125,7 @@ from backend_op.app.params.object_type_params import (
     get_object_type_get_params,
     get_object_type_paginated_params,
     get_object_type_update_params,
+    get_object_type_get_children_params,
 )
 
 __all__ = [
@@ -198,6 +201,7 @@ __all__ = [
     "get_object_kind_get_params",
     "get_object_kind_paginated_params",
     "get_object_kind_update_params",
+    "get_object_kind_get_children_params",
     "ObjectCreateParams",
     "ObjectDeleteParams",
     "ObjectGetAllParams",
@@ -210,6 +214,7 @@ __all__ = [
     "get_object_get_params",
     "get_object_paginated_params",
     "get_object_update_params",
+    "get_object_get_children_params",
     "ObjectStateCreateParams",
     "ObjectStateDeleteParams",
     "ObjectStateGetAllParams",
@@ -234,4 +239,5 @@ __all__ = [
     "get_object_type_get_params",
     "get_object_type_paginated_params",
     "get_object_type_update_params",
+    "get_object_type_get_children_params",
 ]

@@ -3,8 +3,8 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
-from app.db.database import get_session
-from app.routes.api_handles import router as api_handles_router
+from app.database.database import get_session
+from app.routes import main_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="DB_backend", version="1", lifespan=lifespan)
+app = FastAPI(title="BMSTU Navigation API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,4 +36,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(api_handles_router)
+app.include_router(main_router)

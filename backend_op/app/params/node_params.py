@@ -1,8 +1,8 @@
 from fastapi import Body, Path, Query
 from pydantic import BaseModel
 
-from backend_op.app.base.base_schemas import DeleteSchema, GetSchema, Pagination
-from backend_op.app.schemas.graph_models_schemas import (
+from app.base.base_schemas import DeleteSchema, GetSchema, Pagination
+from app.schemas.graph_models_schemas import (
     NodeCreateSchema,
     NodeUpdateSchema,
 )

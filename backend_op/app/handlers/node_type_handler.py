@@ -3,10 +3,10 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend_op.app.base.base_handler import BaseHandler
-from backend_op.app.base.base_schemas import DeleteSchema, GetSchema, Pagination
-from backend_op.app.models.graph_models import NodeType
-from backend_op.app.schemas.graph_models_schemas import (
+from app.base.base_handler import BaseHandler
+from app.base.base_schemas import DeleteSchema, GetSchema, Pagination
+from app.models.graph_models import NodeType
+from app.schemas.graph_models_schemas import (
     NodeTypeCreateSchema,
     NodeTypeSchema,
     NodeTypeUpdateSchema,

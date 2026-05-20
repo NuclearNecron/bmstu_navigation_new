@@ -3,10 +3,10 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend_op.app.base.base_handler import BaseHandler
-from backend_op.app.base.base_schemas import DeleteSchema, GetSchema, Pagination
-from backend_op.app.models.object_models import Object
-from backend_op.app.schemas.object_models_schemas import (
+from app.base.base_handler import BaseHandler
+from app.base.base_schemas import DeleteSchema, GetSchema, Pagination
+from app.models.object_models import Object
+from app.schemas.object_models_schemas import (
     ObjectCreateSchema,
     ObjectSchema,
     ObjectUpdateSchema,
@@ -84,6 +84,27 @@ class ObjectHandler(
             .offset((pagination.page - 1) * pagination.limit)
             .limit(pagination.limit)
         )
+        result = await session.execute(query)
+        return [
+            ObjectSchema.model_validate(row)
+            for row in result.scalars().all()
+        ]
+
+    async def get_children_by_parent(
+        self, session: AsyncSession, parent_id: int
+    ) -> list[ObjectSchema]:
+        """
+        Получить список дочерних объектов по parent_id.
+
+        Args:
+            session: Асинхронная сессия SQLAlchemy
+            parent_id: Идентификатор родительского объекта
+
+        Returns:
+            Список схем дочерних объектов
+        """
+        log.info("Получаем дочерние объекты для parent_id=%s", parent_id)
+        query = select(Object).where(Object.parent_id == parent_id)
         result = await session.execute(query)
         return [
             ObjectSchema.model_validate(row)

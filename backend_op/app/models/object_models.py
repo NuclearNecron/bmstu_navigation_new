@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
-from backend_op.app.database.database import db
+from app.database.database import db
 
 
 class Object(db):
@@ -18,6 +18,8 @@ class Object(db):
         Integer, ForeignKey("object_state.id", ondelete="cascade"), nullable=False
     )
     number = Column(Integer, unique=True, nullable=False)
+    x_cord = Column(Float, unique=True, nullable=True)
+    y_cord = Column(Float, unique=True, nullable=True)
     short_name = Column(String(50), unique=True, nullable=False)
     full_name = Column(String(100), unique=True, nullable=False)
     description = Column(Text, nullable=True)
