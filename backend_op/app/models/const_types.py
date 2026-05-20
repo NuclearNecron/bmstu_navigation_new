@@ -63,7 +63,7 @@ class ObjectState(db):
 
 
 class ConnectionType(db):
-    __tabletame__ = "connection_type"
+    __tablename__ = "connection_type"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     number = Column(Integer, unique=True, nullable=False)
