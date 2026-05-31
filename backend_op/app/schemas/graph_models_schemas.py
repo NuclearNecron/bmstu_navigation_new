@@ -46,6 +46,8 @@ class NodeSchema(BaseModel):
     x: float | None
     y: float | None
     z: float | None
+    latitude: float | None
+    longitude: float | None
 
 
 class NodeCreateSchema(BaseModel):
@@ -59,6 +61,8 @@ class NodeCreateSchema(BaseModel):
     x: float | None = None
     y: float | None = None
     z: float | None = None
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 class NodeUpdateSchema(BaseModel):
@@ -73,6 +77,8 @@ class NodeUpdateSchema(BaseModel):
     x: float | None = None
     y: float | None = None
     z: float | None = None
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 class ConnectionNodeSchema(BaseModel):

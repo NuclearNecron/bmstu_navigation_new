@@ -21,7 +21,7 @@ class ObjectTypeCreateSchema(BaseModel):
     colour: str
 
 
-class ObjectTypeEditSchema(BaseModel):
+class utObjectTypeEditSchema(BaseModel):
     id: int
     parent_id: int | None = None
     number: int | None = None

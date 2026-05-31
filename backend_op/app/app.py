@@ -4,6 +4,7 @@ import os
 from contextlib import asynccontextmanager
 
 from app.database.database import get_session
+from app.kafka.producer import KafkaConnection
 from app.routes import main_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,8 +23,24 @@ logging.basicConfig(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+
     session = await anext(get_session())
-    yield
+    app.state.db_session = session
+
+    asyncio.sleep(20)
+
+    # Initialize Kafka connection (singleton)
+    kafka_conn = KafkaConnection()
+    await kafka_conn.start()
+    
+    # Store in app state for access by routes
+    app.state.kafka_connection = kafka_conn
+    
+    try:
+        yield
+    finally:
+        # Cleanup on shutdown
+        await app.state.kafka_connection.stop()
 
 
 app = FastAPI(title="BMSTU Navigation API", version="1.0.0", lifespan=lifespan)

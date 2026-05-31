@@ -8,8 +8,8 @@ from app.base.base_schemas import DeleteSchema, GetSchema, Pagination
 from app.models.graph_models import Node
 from app.schemas.graph_models_schemas import (
     NodeCreateSchema,
-    NodeSchema,
     NodeUpdateSchema,
+    NodeSchema,
 )
 
 log = logging.getLogger(__name__)

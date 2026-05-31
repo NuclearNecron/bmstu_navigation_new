@@ -45,6 +45,8 @@ class NodeCreateParams(BaseModel):
     x: float | None = None
     y: float | None = None
     z: float | None = None
+    latitude: float | None = None
+    longitude: float | None = None
 
     def to_create_schema(self) -> NodeCreateSchema:
         return NodeCreateSchema.model_validate(self.model_dump())
@@ -62,6 +64,8 @@ class NodeUpdateParams(BaseModel):
     x: float | None = None
     y: float | None = None
     z: float | None = None
+    latitude: float | None = None
+    longitude: float | None = None
 
     def to_edit_schema(self) -> NodeUpdateSchema:
         return NodeUpdateSchema.model_validate(self.model_dump())
@@ -101,6 +105,8 @@ def get_node_create_params(
     x: float | None = Body(None, description="Координата X"),
     y: float | None = Body(None, description="Координата Y"),
     z: float | None = Body(None, description="Координата Z"),
+    latitude: float | None = Body(None, description="Широта"),
+    longitude: float | None = Body(None, description="Долгота"),
 ) -> NodeCreateParams:
     return NodeCreateParams(
         parent_id=parent_id,
@@ -113,6 +119,8 @@ def get_node_create_params(
         x=x,
         y=y,
         z=z,
+        latitude=latitude,
+        longitude=longitude,
     )
 
 
@@ -128,6 +136,8 @@ def get_node_update_params(
     x: float | None = Body(None, description="Координата X"),
     y: float | None = Body(None, description="Координата Y"),
     z: float | None = Body(None, description="Координата Z"),
+    latitude: float | None = Body(None, description="Широта"),
+    longitude: float | None = Body(None, description="Долгота"),
 ) -> NodeUpdateParams:
     return NodeUpdateParams(
         id=id,
@@ -141,4 +151,6 @@ def get_node_update_params(
         x=x,
         y=y,
         z=z,
+        latitude=latitude,
+        longitude=longitude,
     )

@@ -40,6 +40,8 @@ class Node(db):
     x = Column(Float, nullable=True)
     y = Column(Float, nullable=True)
     z = Column(Float, nullable=True)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
 
     children = relationship("Node")
     object_of_node = relationship(
