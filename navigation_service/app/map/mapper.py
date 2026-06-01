@@ -3,7 +3,18 @@ import gc
 import math
 import heapq
 from app.map.components import NodeType, Node, Connection, RouteNode
-from app.schemas import NodeTypeSchema, NodeSchema, ConnectionSchema, NodeTypesSchema, NodesSchema, ConnectionsSchema, ChangeNodeSchema,ChangeConnectionSchema,ChangeNodeTypeSchema
+from app.schemas import (
+    NodeTypeSchema,
+    NodeSchema,
+    ConnectionSchema,
+    NodeTypesSchema,
+    NodesSchema,
+    ConnectionsSchema,
+    ChangeNodeSchema,
+    ChangeConnectionSchema,
+    ChangeNodeTypeSchema,
+)
+
 
 class Map:
 
@@ -15,7 +26,7 @@ class Map:
         self.exits_list = set(int)
         self.street_connections = dict()
         self.working = False
-    
+
     async def __get_node_types(self) -> NodeTypesSchema:
         pass
 
@@ -24,10 +35,6 @@ class Map:
 
     async def __get_all_nodes_with_connections(self) -> ConnectionsSchema:
         pass
-
-
-
-
 
     async def start(self):
         nodetypes = await self.__get_node_types()
@@ -38,10 +45,10 @@ class Map:
                 complex=nodetype.complex,
                 corpus=nodetype.corpus,
                 building=nodetype.building,
-                floor=  nodetype.floor,
+                floor=nodetype.floor,
                 transit=nodetype.transit,
                 room=nodetype.room,
-                exit_point= nodetype.exit_point,
+                exit_point=nodetype.exit_point,
             )
         del nodetypes
         gc.collect()
@@ -80,9 +87,16 @@ class Map:
                     node1_id=connection.node1_id,
                     node2_id=connection.node2_id,
                 )
-                if self.all_conns(node1_id).latitude is not None and  self.all_conns(node2_id).latitude is not None:
-                    self.street_connections[node1_id][node2_id] = self.all_conns[connection.id]
-                    self.street_connections[node2_id][node1_id] = self.all_conns[connection.id]
+                if (
+                    self.all_conns(node1_id).latitude is not None
+                    and self.all_conns(node2_id).latitude is not None
+                ):
+                    self.street_connections[node1_id][node2_id] = self.all_conns[
+                        connection.id
+                    ]
+                    self.street_connections[node2_id][node1_id] = self.all_conns[
+                        connection.id
+                    ]
                 else:
                     self.nodes[node1_id].conns[node2_id] = self.all_conns[connection.id]
                     self.nodes[node2_id].conns[node1_id] = self.all_conns[connection.id]
@@ -90,18 +104,18 @@ class Map:
         gc.collect()
         self.working = True
 
-    async def add_type(self, id:int, nodetype: NodeTypeSchema) -> None:
+    async def add_type(self, id: int, nodetype: NodeTypeSchema) -> None:
         self.types[id] = NodeType(
-                uni=nodetype.uni,
-                campus=nodetype.campus,
-                complex=nodetype.complex,
-                corpus=nodetype.corpus,
-                building=nodetype.building,
-                floor=  nodetype.floor,
-                transit=nodetype.transit,
-                room=nodetype.room,
-                exit_point= nodetype.exit_point,
-            )
+            uni=nodetype.uni,
+            campus=nodetype.campus,
+            complex=nodetype.complex,
+            corpus=nodetype.corpus,
+            building=nodetype.building,
+            floor=nodetype.floor,
+            transit=nodetype.transit,
+            room=nodetype.room,
+            exit_point=nodetype.exit_point,
+        )
         return None
 
     async def add_node(self, node: NodeSchema) -> None:
@@ -135,7 +149,10 @@ class Map:
         )
         node1_id = connection.node1_id
         node2_id = connection.node2_id
-        if self.all_conns(node1_id).latitude is not None and  self.all_conns(node2_id).latitude is not None:
+        if (
+            self.all_conns(node1_id).latitude is not None
+            and self.all_conns(node2_id).latitude is not None
+        ):
             self.street_connections[node1_id][node2_id] = self.all_conns[connection.id]
             self.street_connections[node2_id][node1_id] = self.all_conns[connection.id]
         else:
@@ -145,31 +162,31 @@ class Map:
 
     async def change_type(self, nodetype: ChangeNodeTypeSchema):
         target_value = nodetype.id
-        
+
         if nodetype.uni == target_value:
-            target_param = 'uni'
+            target_param = "uni"
         elif nodetype.campus == target_value:
-            target_param = 'campus'
+            target_param = "campus"
         elif nodetype.complex == target_value:
-            target_param = 'complex'
+            target_param = "complex"
         elif nodetype.corpus == target_value:
-            target_param = 'corpus'
+            target_param = "corpus"
         elif nodetype.building == target_value:
-            target_param = 'building'
+            target_param = "building"
         elif nodetype.floor == target_value:
-            target_param = 'floor'
+            target_param = "floor"
         elif nodetype.transit == target_value:
-            target_param = 'transit'
+            target_param = "transit"
         elif nodetype.room == target_value:
-            target_param = 'room'
+            target_param = "room"
         elif nodetype.exit_point == target_value:
-            target_param = 'exit_point'
+            target_param = "exit_point"
         else:
             return None
-        
+
         for type_id, type_obj in self.types.items():
             current_value = getattr(type_obj, target_param)
-            
+
             if current_value == target_value:
                 if nodetype.uni is not None:
                     type_obj.uni = nodetype.uni
@@ -189,12 +206,12 @@ class Map:
                     type_obj.room = nodetype.room
                 if nodetype.exit_point is not None:
                     type_obj.exit_point = nodetype.exit_point
-        
+
         return None
 
     async def change_node(self, node: ChangeNodeSchema):
         node_obj = self.nodes[node.id]
-        
+
         if node.x is not None:
             node_obj.x = node.x
         if node.y is not None:
@@ -207,7 +224,7 @@ class Map:
             node_obj.longitude = node.longitude
         if node.name is not None:
             node_obj.name = node.name
-            
+
         return None
 
     async def change_conn(self, conn: ChangeConnectionSchema):
@@ -217,20 +234,51 @@ class Map:
         return None
 
     async def delete_conn(self, id: int):
-        node1_id = self.all_conns[id].node1_id
-        node2_id = self.all_conns[id].node2_id
-        del self.nodes[node1_id].conns[node2_id]
-        del self.nodes[node2_id].conns[node1_id]
+        conn = self.all_conns[id]
+        node1_id = conn.node1_id
+        node2_id = conn.node2_id
+
+        if node1_id in self.nodes and node2_id in self.nodes[node1_id].conns:
+            del self.nodes[node1_id].conns[node2_id]
+        if node2_id in self.nodes and node1_id in self.nodes[node2_id].conns:
+            del self.nodes[node2_id].conns[node1_id]
+
+        if (
+            node1_id in self.street_connections
+            and node2_id in self.street_connections[node1_id]
+        ):
+            del self.street_connections[node1_id][node2_id]
+        if (
+            node2_id in self.street_connections
+            and node1_id in self.street_connections[node2_id]
+        ):
+            del self.street_connections[node2_id][node1_id]
+
         del self.all_conns[id]
         gc.collect()
         return None
 
     async def delete_node(self, node_id: int):
-        for _, connection in self.nodes[node_id].conns.items():
+        for _, connection in list(self.nodes[node_id].conns.items()):
             await self.delete_conn(connection.id)
+
+        if node_id in self.exits_list:
+            self.exits_list.remove(node_id)
+
+        node = self.nodes[node_id]
+        if node.type.complex is not None and node.type.complex in self.exits:
+            if node_id in self.exits[node.type.complex]:
+                self.exits[node.type.complex].remove(node_id)
+                if len(self.exits[node.type.complex]) == 0:
+                    del self.exits[node.type.complex]
+
+        if node_id in self.street_connections:
+            del self.street_connections[node_id]
+
         del self.nodes[node_id]
         gc.collect()
         return None
+
     async def __simple_delete_type(self, type_id: int):
         for node in self.types[type_id].realizations:
             await self.delete_node(node.id)
@@ -240,31 +288,31 @@ class Map:
     async def delete_type(self, type_id: int):
         for node in self.types[type_id].realizations:
             await self.delete_node(node.id)
-        
+
         nodetype = self.types[type_id]
-        
+
         if nodetype.uni == type_id:
-            target_param = 'uni'
+            target_param = "uni"
         elif nodetype.campus == type_id:
-            target_param = 'campus'
+            target_param = "campus"
         elif nodetype.complex == type_id:
-            target_param = 'complex'
+            target_param = "complex"
         elif nodetype.corpus == type_id:
-            target_param = 'corpus'
+            target_param = "corpus"
         elif nodetype.building == type_id:
-            target_param = 'building'
+            target_param = "building"
         elif nodetype.floor == type_id:
-            target_param = 'floor'
+            target_param = "floor"
         elif nodetype.transit == type_id:
-            target_param = 'transit'
+            target_param = "transit"
         elif nodetype.room == type_id:
-            target_param = 'room'
+            target_param = "room"
         elif nodetype.exit_point == type_id:
-            target_param = 'exit_point'
-        
+            target_param = "exit_point"
+
         for new_type_id, type_obj in self.types.items():
             current_value = getattr(type_obj, target_param)
-            
+
             if current_value == type_id:
                 await self.__simple_delete_type(new_type_id)
 
@@ -275,14 +323,35 @@ class Map:
     @staticmethod
     def __calculate_distance(current: Node, target: Node) -> float:
         return math.sqrt(
-            (target.x - current.x)**2
-            + (target.y - current.y)**2
-            + (target.z - current.z)**2
+            (target.x - current.x) ** 2
+            + (target.y - current.y) ** 2
+            + (target.z - current.z) ** 2
         )
 
+    def __group_route_by_floor(self, route: list) -> list:
+        grouped_route = []
+        current_floor = None
+        current_floor_nodes = []
+        
+        for node in route:
+            floor = node.type.floor
+            
+            if floor != current_floor:
+                if current_floor is not None:
+                    grouped_route.append({current_floor: current_floor_nodes})
+                current_floor = floor
+                current_floor_nodes = []
+            
+            current_floor_nodes.append(node)
+        
+        if current_floor is not None:
+            grouped_route.append({current_floor: current_floor_nodes})
+            
+        return grouped_route
+
     async def __navigate_building(self, start_node: int, target_node: int):
-        start = self.nodes[f"{start_node}"]
-        target = self.nodes[f"{target_node}"]
+        start = self.nodes[start_node]
+        target = self.nodes[target_node]
 
         to_visit = []
         visited = set()
@@ -308,16 +377,15 @@ class Map:
                     current_node = current_node.previous
                 else:
                     result.append(current_node.current)
-                return {"result": result[::-1], "length": length}
+                
+                grouped_result = self.__group_route_by_floor(result[::-1])
+                
+                return {"result": grouped_result, "length": length}
 
             visited.add(current_node.current.id)
 
             for key_node_id, conn_value in current_node.current.conns.items():
                 if int(key_node_id) in visited:
-                    continue
-                if self.nodes[f"{key_node_id}"].type.name == KEY_TYPES.STREET:
-                    continue
-                if self.nodes[f"{key_node_id}"].type.name == KEY_TYPES.ELEVATOR:
                     continue
 
                 if elem := next(
@@ -340,75 +408,112 @@ class Map:
                     heapq.heappush(
                         to_visit,
                         RouteNode(
-                            self.__calculate_distance(
-                                self.nodes[f"{key_node_id}"], target
-                            ),
+                            self.__calculate_distance(self.nodes[key_node_id], target),
                             current_node.start_distance + conn_value.distance,
-                            self.nodes[f"{key_node_id}"],
+                            self.nodes[key_node_id],
                             current_node,
                         ),
                     )
 
-    async def __navigate_street(self, start_node: int, target_node: int):
-        pass
+            visited.add(current_node.current.id)
+
+            for key_node_id, conn_value in current_node.current.conns.items():
+                if int(key_node_id) in visited:
+                    continue
+
+                if elem := next(
+                    (
+                        element
+                        for element in to_visit
+                        if element.current.id == int(key_node_id)
+                    ),
+                    None,
+                ):
+                    if (
+                        current_node.start_distance + conn_value.distance
+                        < elem.start_distance
+                    ):
+                        elem.start_distance = (
+                            current_node.start_distance + conn_value.distance
+                        )
+                        elem.previous = current_node
+                else:
+                    heapq.heappush(
+                        to_visit,
+                        RouteNode(
+                            self.__calculate_distance(self.nodes[key_node_id], target),
+                            current_node.start_distance + conn_value.distance,
+                            self.nodes[key_node_id],
+                            current_node,
+                        ),
+                    )
+
+    async def __navigate_street(self, start_complex: int, target_complex: int):
+        start_exits = self.exits[start_complex]
+        target_exits = self.exits[target_complex]
+
+        min_distance = float("inf")
+        best_start_exit = None
+        best_target_exit = None
+
+        for start_exit_id in start_exits:
+            for target_exit_id in target_exits:
+                if (
+                    start_exit_id in self.street_connections
+                    and target_exit_id in self.street_connections[start_exit_id]
+                ):
+
+                    distance = self.street_connections[start_exit_id][
+                        target_exit_id
+                    ].distance
+
+                    if distance < min_distance:
+                        min_distance = distance
+                        best_start_exit = start_exit_id
+                        best_target_exit = target_exit_id
+
+        return {
+            "distance": min_distance,
+            "start_exit": best_start_exit,
+            "target_exit": best_target_exit,
+        }
 
     async def navigate_main(self, start_node: int, target_node: int):
-        start = self.nodes[f"{start_node}"]
-        target = self.nodes[f"{target_node}"]
+        start = self.nodes[start_node]
+        target = self.nodes[target_node]
 
-        kor_s = await self.__go_up(KEY_TYPES.KORPUS, start)
-        kor_t = await self.__go_up(KEY_TYPES.KORPUS, target)
+        start_complex = await start.type.complex
+        target_complex = await target.type.complex
 
-        if kor_s == kor_t:
+        if start_complex is None or target_complex is None:
+            return None
+
+        if start_complex == target_complex:
             result = await self.__navigate_building(start_node, target_node)
-            return result["result"]
-        elif kor_s is None:
-            if kor_t is None:
-                result = await self.__navigate_street(start_node, target_node)
-                return result["result"]
-            else:
-                entrances = self.exits[f"{kor_t.id}"]
-                best_street_route = None
-                route_length = -1
-                optimal_entrance = -1
-                for key in entrances:
-                    temp_result = await self.__navigate_street(start_node, int(key))
-                    if optimal_entrance == -1 or temp_result < route_length:
-                        best_street_route = temp_result["result"]
-                        route_length = temp_result.length
-                        optimal_entrance = int(key)
-                building_route = await self.__navigate_building(
-                    optimal_entrance, target_node
-                )
-                return best_street_route[:-1] + building_route["result"]
-        elif kor_t is None:
-            exits = self.exits[f"{kor_s.id}"]
-            best_street_route = None
-            route_length = -1
-            optimal_exit = -1
-            for key in exits:
-                temp_result = await self.__navigate_street(int(key), target_node)
-                if optimal_exit == -1 or temp_result < route_length:
-                    best_street_route = temp_result["result"]
-                    route_length = temp_result.length
-                    optimal_exit = int(key)
-            building_route = await self.__navigate_building(start_node, optimal_exit)
-            return building_route["result"][:-1] + best_street_route
+            return result
         else:
-            exits_s = self.exits[f"{kor_s.id}"]
-            exits_t = self.exits[f"{kor_t.id}"]
-            best_street_route = None
-            route_length = -1
-            optimal_exit_s = -1
-            optimal_exit_t = -1
-            for key_s in exits_s:
-                for key_t in exits_t:
-                    temp_result = await self.__navigate_street(int(key_s), int(key_t))
-                if optimal_exit_s == -1 or temp_result < route_length:
-                    best_street_route = temp_result["result"]
-                    route_length = temp_result.length
-                    optimal_exit_s = int(key_s)
-                    optimal_exit_t = int(key_t)
-            building_route_s = await self.__navigate_building(start_node, optimal_exit_s)
-            building_route_t = await self.__navigate_building(optimal_exit_t, target_node)
-            return building_route_s["result"][:-1] + best_street_route["result"][:-1] + building_route_t
+            street_nav = self.__navigate_street(start_complex, target_complex)
+            if street_nav is None:
+                return None
+            start_nav = self.__navigate_building(
+                start_node=start_node, target_node=street_nav["start_exit"]
+            )
+            target_nav = self.__navigate_building(
+                start_node=street_nav["target_exit"], target_node=target_node
+            )
+            return {
+                "1": start_nav,
+                "street": {
+                    "start_node": {
+                        "id": street_nav["start_exit"],
+                        "latitude": self.nodes[street_nav["start_exit"]].latitude,
+                        "longtitude": self.nodes[street_nav["start_exit"]].longtitude,
+                    },
+                    "target_node": {
+                        "id": street_nav["target_exit"],
+                        "latitude": self.nodes[street_nav["target_exit"]].latitude,
+                        "longtitude": self.nodes[street_nav["target_exit"]].longtitude,
+                    },
+                },
+                "2": target_nav,
+            }
