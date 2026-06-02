@@ -19,6 +19,7 @@ class KafkaConnection:
             )
             self.producer = None
             self.initialized = True
+            self.topic = os.getenv("KAFKA_TOPIC", "nav-updates")
 
     async def start(self):
         """Initialize the Kafka producer."""
@@ -36,7 +37,7 @@ class KafkaConnection:
             await self.producer.stop()
             self.producer = None
 
-    async def send_message(self, topic: str, message: dict):
+    async def send_message(self, message: dict):
         """Send a message to Kafka topic."""
         if not self.producer:
             raise RuntimeError("Kafka producer not initialized. Call start() first.")
@@ -46,7 +47,7 @@ class KafkaConnection:
             value = json.dumps(message).encode("utf-8")
 
             await self.producer.send_and_wait(
-                topic=topic,
+                topic=self.topic,
                 value=value,
             )
         except Exception as e:

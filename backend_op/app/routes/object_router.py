@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,7 +22,11 @@ from app.params.object_params import (
     get_object_paginated_params,
     get_object_update_params,
 )
-from app.schemas.object_models_schemas import ObjectSchema, ObjectMapperSchema
+from app.schemas.object_models_schemas import (
+    NodeTypeCreateParams,
+    ObjectSchema,
+    ObjectMapperSchema,
+)
 from app.base.base_schemas import GetSchema
 
 router = APIRouter(
@@ -34,44 +38,48 @@ router = APIRouter(
 SessionDep = Depends(get_session)
 
 
-async def validate_parent_exists(parent_id: int, handler: ObjectHandler, session: AsyncSession):
+async def validate_parent_exists(
+    parent_id: int, handler: ObjectHandler, session: AsyncSession
+):
     """Проверяет существование родительского объекта. Если parent_id is None, возвращает True."""
     if parent_id is None:
         return True
-    
+
     parent = await handler.get(session, GetSchema(id=parent_id))
     if parent is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Parent object with id {parent_id} not found"
+            detail=f"Parent object with id {parent_id} not found",
         )
     return True
+
 
 async def validate_type_exists(type_id: int, session: AsyncSession):
     """Проверяет существование типа объекта. Если type_id is None, возвращает True."""
     if type_id is None:
         return True
-        
+
     handler = ObjectTypeHandler()
     obj_type = await handler.get(session, GetSchema(id=type_id))
     if obj_type is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Object type with id {type_id} not found"
+            detail=f"Object type with id {type_id} not found",
         )
     return True
+
 
 async def validate_kind_exists(kind_id: int, session: AsyncSession):
     """Проверяет существование вида объекта. Если kind_id is None, возвращает True."""
     if kind_id is None:
         return True
-        
+
     handler = ObjectKindHandler()
     obj_kind = await handler.get(session, GetSchema(id=kind_id))
     if obj_kind is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Object kind with id {kind_id} not found"
+            detail=f"Object kind with id {kind_id} not found",
         )
     return True
 
@@ -87,6 +95,7 @@ async def get_all_objects(
     handler = ObjectHandler()
     result = await handler.get_all(session)
     return JSONResponse(content=[obj.model_dump() for obj in result])
+
 
 @router.get("/mapped", response_model=list[ObjectMapperSchema])
 async def get_all_objects(
@@ -111,7 +120,6 @@ async def get_paginated_objects(
     return JSONResponse(content=[obj.model_dump() for obj in result])
 
 
-
 @router.get("/{id}", response_model=ObjectSchema)
 async def get_object(
     session: AsyncSession = SessionDep,
@@ -127,7 +135,6 @@ async def get_object(
     return JSONResponse(content=result.model_dump())
 
 
-
 @router.post("/", response_model=ObjectSchema, status_code=status.HTTP_201_CREATED)
 async def create_object(
     request: Request,
@@ -138,24 +145,29 @@ async def create_object(
     Создать новый объект.
     """
     handler = ObjectHandler()
-    
+
     # Проверяем существование родительского объекта
     await validate_parent_exists(params.parent_id, handler, session)
-    
+
     # Проверяем существование типа объекта
     await validate_type_exists(params.type_id, session)
-    
+
     # Проверяем существование вида объекта
     await validate_kind_exists(params.kind_id, session)
-    
-    result = await handler.create(session, params.to_create_schema())
-    return JSONResponse(content=result.model_dump(), status_code=status.HTTP_201_CREATED)
 
+    result = await handler.create(session, params.to_create_schema())
+
+    node_type_schema = await handler.get_parent_chain(session, params.id)
+    await request.app.state.kafka_connection.send_message(
+        message={"event": "OBJECT_CREATE", "message": node_type_schema.model_dump()}
+    )
+    return JSONResponse(
+        content=result.model_dump(), status_code=status.HTTP_201_CREATED
+    )
 
 
 @router.put("/{id}", response_model=ObjectSchema)
 async def update_object(
-    request: Request,
     session: AsyncSession = SessionDep,
     params: ObjectUpdateParams = Depends(get_object_update_params),
 ) -> ObjectSchema | None:
@@ -163,35 +175,33 @@ async def update_object(
     Обновить объект по ID.
     """
     handler = ObjectHandler()
-    
+
     # Проверяем существование обновляемого объекта
     existing = await handler.get(session, params.id)
     if existing is None:
         raise HTTPException(status_code=404, detail="Object not found")
-    
+
     # Проверяем существование родительского объекта, если он указан
     if params.parent_id is not None:
         await validate_parent_exists(params.parent_id, handler, session)
-    
+
     # Проверяем существование типа объекта, если он указан
     if params.kind_id is not None:
         await validate_type_exists(params.kind_id, session)
-    
+
     # Проверяем существование вида объекта, если он указан
     if params.kind_id is not None:
         await validate_kind_exists(params.kind_id, session)
-    
+
     result = await handler.update(session, params.to_edit_schema())
-    if existing.parent_id != params.parent_id:
-        request.app.state.kafka_connection.send_message(topic = )
     if result is None:
         raise HTTPException(status_code=404, detail="Object not found")
     return JSONResponse(content=result.model_dump())
 
 
-
 @router.delete("/{id}", response_model=dict)
 async def delete_object(
+    request: Request,
     session: AsyncSession = SessionDep,
     params: ObjectDeleteParams = Depends(get_object_delete_params),
 ) -> dict:
@@ -202,8 +212,11 @@ async def delete_object(
     deleted = await handler.delete(session, params.to_delete_schema())
     if not deleted:
         raise HTTPException(status_code=404, detail="Object not found")
+    else:
+        await request.app.state.kafka_connection.send_message(
+            message={"event": "OBJECT_DELETE", "message": params.id}
+        )
     return JSONResponse(content={"status": "success", "message": "Object deleted"})
-
 
 
 @router.get("/parent/{parent_id}", response_model=list[ObjectSchema])
@@ -217,3 +230,16 @@ async def get_objects_by_parent(
     handler = ObjectHandler()
     result = await handler.get_children_by_parent(session, params.parent_id)
     return JSONResponse(content=[obj.model_dump() for obj in result])
+
+
+@router.get("/parent-chain/{id}", response_model=NodeTypeCreateParams)
+async def get_parent_chain(
+    id: int,
+    session: AsyncSession = SessionDep,
+) -> NodeTypeCreateParams:
+    """
+    Получить цепочку родителей объекта.
+    """
+    handler = ObjectHandler()
+    result = await handler.get_parent_chain(session, id)
+    return JSONResponse(content=result.model_dump())

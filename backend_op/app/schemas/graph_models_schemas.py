@@ -110,3 +110,32 @@ class ConnectionNodeUpdateSchema(BaseModel):
     node_id2: int | None = None
     connection_type_id: int | None = None
     distance: float | None = None
+
+
+class NodeNavSchema(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: int
+    type_id: int
+    x: float
+    y: float
+    z: float
+    latitude: float | None = None
+    longitude: float | None = None
+    name: str
+
+
+class ConnectionNodeNavSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    node_id1: int
+    node_id2: int
+    distance: float
+
+
+class ConnectionNodeNavUpdSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    distance: float

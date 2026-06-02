@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,7 +20,7 @@ from app.params.node_params import (
     get_node_paginated_params,
     get_node_update_params,
 )
-from app.schemas.graph_models_schemas import NodeSchema, NodeMapperSchema
+from app.schemas.graph_models_schemas import NodeSchema, NodeMapperSchema, NodeNavSchema
 
 router = APIRouter(
     prefix="/nodes",
@@ -133,6 +133,7 @@ async def get_node(
 
 @router.post("/", response_model=NodeSchema, status_code=status.HTTP_201_CREATED)
 async def create_node(
+    request: Request,
     session: AsyncSession = SessionDep,
     params: NodeCreateParams = Depends(get_node_create_params),
 ) -> NodeSchema:
@@ -151,6 +152,22 @@ async def create_node(
     await validate_type_exists(params.type_id, session)
 
     result = await handler.create(session, params.to_create_schema())
+    await request.app.state.kafka_connection.send_message(
+        message={
+            "event": "NODE_CREATE",
+            "message": NodeNavSchema(
+                id=result.id,
+                type_id=result.object_id,
+                x=result.x,
+                y=result.y,
+                z=result.z,
+                name=result.short_name,
+                longitude=result.longitude,
+                latitude=result.latitude,
+            ).model_dump(),
+        }
+    )
+
     return JSONResponse(
         content=result.model_dump(), status_code=status.HTTP_201_CREATED
     )
@@ -158,6 +175,7 @@ async def create_node(
 
 @router.put("/{id}", response_model=NodeSchema)
 async def update_node(
+    request: Request,
     session: AsyncSession = SessionDep,
     params: NodeUpdateParams = Depends(get_node_update_params),
 ) -> NodeSchema | None:
@@ -186,11 +204,28 @@ async def update_node(
     result = await handler.update(session, params.to_edit_schema())
     if result is None:
         raise HTTPException(status_code=404, detail="Node not found")
+    else:
+        await request.app.state.kafka_connection.send_message(
+            message={
+                "event": "NODE_UPDATE",
+                "message": NodeNavSchema(
+                    id=result.id,
+                    type_id=result.object_id,
+                    x=result.x,
+                    y=result.y,
+                    z=result.z,
+                    name=result.short_name,
+                    longitude=result.longitude,
+                    latitude=result.latitude,
+                ).model_dump(),
+            }
+        )
     return JSONResponse(content=result.model_dump())
 
 
 @router.delete("/{id}", response_model=dict)
 async def delete_node(
+    request: Request,
     session: AsyncSession = SessionDep,
     params: NodeDeleteParams = Depends(get_node_delete_params),
 ) -> dict:
@@ -201,4 +236,8 @@ async def delete_node(
     deleted = await handler.delete(session, params.to_delete_schema())
     if not deleted:
         raise HTTPException(status_code=404, detail="Node not found")
+    else:
+        await request.app.state.kafka_connection.send_message(
+            message={"event": "NODE_DELETE", "message": params.id}
+        )
     return JSONResponse(content={"status": "success", "message": "Node deleted"})

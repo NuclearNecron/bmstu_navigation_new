@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,7 +20,11 @@ from app.params.connection_node_params import (
     get_connection_node_paginated_params,
     get_connection_node_update_params,
 )
-from app.schemas.graph_models_schemas import ConnectionNodeSchema
+from app.schemas.graph_models_schemas import (
+    ConnectionNodeSchema,
+    ConnectionNodeNavSchema,
+    ConnectionNodeNavUpdSchema,
+)
 
 router = APIRouter(
     prefix="/connection-nodes",
@@ -120,6 +124,7 @@ async def get_connection_node(
     "/", response_model=ConnectionNodeSchema, status_code=status.HTTP_201_CREATED
 )
 async def create_connection_node(
+    request: Request,
     session: AsyncSession = SessionDep,
     params: ConnectionNodeCreateParams = Depends(get_connection_node_create_params),
 ) -> ConnectionNodeSchema:
@@ -138,6 +143,17 @@ async def create_connection_node(
     await validate_connection_type_exists(params.connection_type_id, session)
 
     result = await handler.create(session, params.to_create_schema())
+    await request.app.state.kafka_connection.send_message(
+        message={
+            "event": "CONNECTION_CREATE",
+            "message": ConnectionNodeNavSchema(
+                id=result.id,
+                node_id1=result.node_id1,
+                node_id2=result.node_id2,
+                distance=result.distance,
+            ).model_dump(),
+        }
+    )
     return JSONResponse(
         content=result.model_dump(), status_code=status.HTTP_201_CREATED
     )
@@ -145,6 +161,7 @@ async def create_connection_node(
 
 @router.put("/{id}", response_model=ConnectionNodeSchema)
 async def update_connection_node(
+    request: Request,
     session: AsyncSession = SessionDep,
     params: ConnectionNodeUpdateParams = Depends(get_connection_node_update_params),
 ) -> ConnectionNodeSchema | None:
@@ -173,11 +190,22 @@ async def update_connection_node(
     result = await handler.update(session, params.to_edit_schema())
     if result is None:
         raise HTTPException(status_code=404, detail="Connection node not found")
+    else:
+        await request.app.state.kafka_connection.send_message(
+            message={
+                "event": "CONNECTION_UPDATE",
+                "message": ConnectionNodeNavUpdSchema(
+                    id=result.id,
+                    distance=result.distance,
+                ).model_dump(),
+            }
+        )
     return JSONResponse(content=result.model_dump())
 
 
 @router.delete("/{id}", response_model=dict)
 async def delete_connection_node(
+    request: Request,
     session: AsyncSession = SessionDep,
     params: ConnectionNodeDeleteParams = Depends(get_connection_node_delete_params),
 ) -> dict:
@@ -188,6 +216,10 @@ async def delete_connection_node(
     deleted = await handler.delete(session, params.to_delete_schema())
     if not deleted:
         raise HTTPException(status_code=404, detail="Connection node not found")
+    else:
+        await request.app.state.kafka_connection.send_message(
+            message={"event": "CONNECTION_DELETE", "message": params.id}
+        )
     return JSONResponse(
         content={"status": "success", "message": "Connection node deleted"}
     )
