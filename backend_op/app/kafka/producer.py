@@ -34,7 +34,7 @@ class KafkaConnection:
             await self.producer.stop()
             self.producer = None
 
-    async def send_message(self, topic: str, message: dict, key: str = None):
+    async def send_message(self, topic: str, message: dict):
         """Send a message to Kafka topic."""
         if not self.producer:
             raise RuntimeError("Kafka producer not initialized. Call start() first.")
@@ -42,12 +42,10 @@ class KafkaConnection:
         try:
             # Convert message to JSON and encode to bytes
             value = json.dumps(message).encode('utf-8')
-            kafka_key = key.encode('utf-8') if key else None
             
             await self.producer.send_and_wait(
                 topic=topic,
                 value=value,
-                key=kafka_key
             )
         except Exception as e:
             # Log the error and re-raise

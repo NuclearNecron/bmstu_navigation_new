@@ -10,6 +10,7 @@ from app.schemas.object_models_schemas import (
     ObjectCreateSchema,
     ObjectSchema,
     ObjectUpdateSchema,
+    ObjectMapperSchema
 )
 
 log = logging.getLogger(__name__)
@@ -68,6 +69,15 @@ class ObjectHandler(
         result = await session.execute(query)
         return [
             ObjectSchema.model_validate(row)
+            for row in result.scalars().all()
+        ]
+    
+    async def get_all_for_mapper(self, session: AsyncSession) -> list[ObjectMapperSchema]:
+        log.info("Получаем все записи Object")
+        query = select(Object.id, Object.parent_id)
+        result = await session.execute(query)
+        return [
+            ObjectMapperSchema.model_validate(row)
             for row in result.scalars().all()
         ]
 

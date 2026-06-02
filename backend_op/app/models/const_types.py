@@ -11,7 +11,6 @@ class ObjectType(db):
     parent_id = Column(
         Integer, ForeignKey("object_type.id", ondelete="cascade"), nullable=True
     )
-    number = Column(Integer, unique=True, nullable=False)
     short_name = Column(String(50), unique=True, nullable=False)
     full_name = Column(String(100), unique=True, nullable=False)
     description = Column(Text, nullable=True)
@@ -33,7 +32,6 @@ class ObjectKind(db):
     type_id = Column(
         Integer, ForeignKey("object_type.id", ondelete="cascade"), nullable=False
     )
-    number = Column(Integer, unique=True, nullable=False)
     short_name = Column(String(50), unique=True, nullable=False)
     full_name = Column(String(100), unique=True, nullable=False)
     description = Column(Text, nullable=True)
@@ -52,7 +50,6 @@ class ObjectState(db):
     __tablename__ = "object_state"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    number = Column(Integer, unique=True, nullable=False)
     short_name = Column(String(50), unique=True, nullable=False)
     full_name = Column(String(100), unique=True, nullable=False)
     description = Column(Text, nullable=True)
@@ -66,7 +63,6 @@ class ConnectionType(db):
     __tablename__ = "connection_type"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    number = Column(Integer, unique=True, nullable=False)
     short_name = Column(String(50), unique=True, nullable=False)
     full_name = Column(String(100), unique=True, nullable=False)
     description = Column(Text, nullable=True)

@@ -5,7 +5,6 @@ class NodeTypeSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    number: int
     short_name: str
     full_name: str
     description: str | None
@@ -14,7 +13,6 @@ class NodeTypeSchema(BaseModel):
 
 
 class NodeTypeCreateSchema(BaseModel):
-    number: int
     short_name: str
     full_name: str
     description: str | None = None
@@ -24,7 +22,6 @@ class NodeTypeCreateSchema(BaseModel):
 
 class NodeTypeUpdateSchema(BaseModel):
     id: int
-    number: int | None = None
     short_name: str | None = None
     full_name: str | None = None
     description: str | None = None
@@ -39,10 +36,20 @@ class NodeSchema(BaseModel):
     parent_id: int | None
     object_id: int
     type_id: int
-    number: int
     short_name: str
     full_name: str
     SVG: str | None
+    x: float | None
+    y: float | None
+    z: float | None
+    latitude: float | None
+    longitude: float | None
+
+class NodeMapperSchema(BaseModel):
+
+    id: int
+    object_id: int
+    short_name: str
     x: float | None
     y: float | None
     z: float | None
@@ -54,7 +61,6 @@ class NodeCreateSchema(BaseModel):
     parent_id: int | None = None
     object_id: int
     type_id: int
-    number: int
     short_name: str
     full_name: str
     SVG: str | None = None
@@ -70,7 +76,6 @@ class NodeUpdateSchema(BaseModel):
     parent_id: int | None = None
     object_id: int | None = None
     type_id: int | None = None
-    number: int | None = None
     short_name: str | None = None
     full_name: str | None = None
     SVG: str | None = None

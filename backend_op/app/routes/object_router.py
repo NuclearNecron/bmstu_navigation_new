@@ -22,7 +22,8 @@ from app.params.object_params import (
     get_object_paginated_params,
     get_object_update_params,
 )
-from app.schemas.object_models_schemas import ObjectSchema
+from app.schemas.object_models_schemas import ObjectSchema, ObjectMapperSchema
+from app.base.base_schemas import GetSchema
 
 router = APIRouter(
     prefix="/objects",
@@ -87,6 +88,15 @@ async def get_all_objects(
     result = await handler.get_all(session)
     return JSONResponse(content=[obj.model_dump() for obj in result])
 
+@router.get("/mapped", response_model=list[ObjectMapperSchema])
+async def get_all_objects(
+    session: AsyncSession = SessionDep,
+    params: ObjectGetAllParams = Depends(get_object_get_all_params),
+):
+    handler = ObjectHandler()
+    result = await handler.get_all_for_mapper(session)
+    return JSONResponse(content=[obj.model_dump() for obj in result])
+
 
 @router.get("/page", response_model=list[ObjectSchema])
 async def get_paginated_objects(
@@ -120,6 +130,7 @@ async def get_object(
 
 @router.post("/", response_model=ObjectSchema, status_code=status.HTTP_201_CREATED)
 async def create_object(
+    request: Request,
     session: AsyncSession = SessionDep,
     params: ObjectCreateParams = Depends(get_object_create_params),
 ) -> ObjectSchema:
@@ -144,6 +155,7 @@ async def create_object(
 
 @router.put("/{id}", response_model=ObjectSchema)
 async def update_object(
+    request: Request,
     session: AsyncSession = SessionDep,
     params: ObjectUpdateParams = Depends(get_object_update_params),
 ) -> ObjectSchema | None:
@@ -170,6 +182,8 @@ async def update_object(
         await validate_kind_exists(params.kind_id, session)
     
     result = await handler.update(session, params.to_edit_schema())
+    if existing.parent_id != params.parent_id:
+        request.app.state.kafka_connection.send_message(topic = )
     if result is None:
         raise HTTPException(status_code=404, detail="Object not found")
     return JSONResponse(content=result.model_dump())

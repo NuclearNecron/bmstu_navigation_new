@@ -38,7 +38,6 @@ class NodeCreateParams(BaseModel):
     parent_id: int | None = None
     object_id: int
     type_id: int
-    number: int
     short_name: str
     full_name: str
     SVG: str | None = None
@@ -57,7 +56,6 @@ class NodeUpdateParams(BaseModel):
     parent_id: int | None = None
     object_id: int | None = None
     type_id: int | None = None
-    number: int | None = None
     short_name: str | None = None
     full_name: str | None = None
     SVG: str | None = None
@@ -98,7 +96,6 @@ def get_node_create_params(
     parent_id: int | None = Body(None, description="Идентификатор родительского узла"),
     object_id: int = Body(..., description="Идентификатор объекта"),
     type_id: int = Body(..., description="Идентификатор типа узла"),
-    number: int = Body(..., description="Порядковый номер"),
     short_name: str = Body(..., description="Краткое наименование", max_length=50),
     full_name: str = Body(..., description="Полное наименование", max_length=100),
     SVG: str | None = Body(None, description="SVG код узла"),
@@ -112,7 +109,6 @@ def get_node_create_params(
         parent_id=parent_id,
         object_id=object_id,
         type_id=type_id,
-        number=number,
         short_name=short_name,
         full_name=full_name,
         SVG=SVG,
@@ -129,7 +125,6 @@ def get_node_update_params(
     parent_id: int | None = Body(None, description="Идентификатор родительского узла"),
     object_id: int | None = Body(None, description="Идентификатор объекта"),
     type_id: int | None = Body(None, description="Идентификатор типа узла"),
-    number: int | None = Body(None, description="Порядковый номер"),
     short_name: str | None = Body(None, description="Краткое наименование", max_length=50),
     full_name: str | None = Body(None, description="Полное наименование", max_length=100),
     SVG: str | None = Body(None, description="SVG код узла"),
@@ -144,7 +139,6 @@ def get_node_update_params(
         parent_id=parent_id,
         object_id=object_id,
         type_id=type_id,
-        number=number,
         short_name=short_name,
         full_name=full_name,
         SVG=SVG,

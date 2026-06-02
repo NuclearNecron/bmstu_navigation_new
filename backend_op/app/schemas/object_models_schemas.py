@@ -8,7 +8,6 @@ class ObjectSchema(BaseModel):
     parent_id: int | None
     kind_id: int
     state_id: int
-    number: int
     short_name: str
     full_name: str
     description: str | None
@@ -21,12 +20,16 @@ class ObjectSchema(BaseModel):
     x_cord: float | None
     y_cord: float | None
 
+class ObjectMapperSchema(BaseModel):
+
+    id: int
+    parent_id: int | None
+
 
 class ObjectCreateSchema(BaseModel):
     parent_id: int | None = None
     kind_id: int
     state_id: int
-    number: int
     short_name: str
     full_name: str
     description: str | None = None
@@ -45,7 +48,6 @@ class ObjectUpdateSchema(BaseModel):
     parent_id: int | None = None
     kind_id: int | None = None
     state_id: int | None = None
-    number: int | None = None
     short_name: str | None = None
     full_name: str | None = None
     description: str | None = None

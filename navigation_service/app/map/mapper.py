@@ -2,6 +2,7 @@ import typing
 import gc
 import math
 import heapq
+import httpx
 from app.map.components import NodeType, Node, Connection, RouteNode
 from app.schemas import (
     NodeTypeSchema,
@@ -19,6 +20,7 @@ from app.schemas import (
 class Map:
 
     def __init__(self):
+        self.object_service_url = ""  # URL сервиса объектов
         self.types = dict()
         self.nodes = dict()
         self.all_conns = dict()
@@ -28,13 +30,141 @@ class Map:
         self.working = False
 
     async def __get_node_types(self) -> NodeTypesSchema:
-        pass
+        """
+        Получить все типы объектов из backend_op и построить иерархию.
+        """
+        async with httpx.AsyncClient() as client:
+            # Получаем плоский список объектов с их parent_id
+            response = await client.get(f"{self.object_service_url}/objects/mapped")
+            if response.status_code != 200:
+                raise Exception(f"Failed to fetch mapped objects: {response.status_code}")
+            
+            objects_data = response.json()
+            
+        # Строим дерево из parent_id
+        tree = {}
+        root_nodes = []
+        
+        # Создаем узлы для всех объектов
+        for obj in objects_data:
+            obj_id = obj["id"]
+            parent_id = obj.get("parent_id")
+            
+            # Инициализируем узел
+            if obj_id not in tree:
+                tree[obj_id] = {"obj": obj, "children": []}
+            else:
+                tree[obj_id]["obj"] = obj
+                
+            # Если есть родитель, добавляем как ребенка
+            if parent_id:
+                if parent_id not in tree:
+                    tree[parent_id] = {"obj": None, "children": []}
+                tree[parent_id]["children"].append(tree[obj_id])
+            else:
+                # Корневой узел
+                if tree[obj_id] not in root_nodes:
+                    root_nodes.append(tree[obj_id])
+        
+        # Рекурсивно строим NodeTypeSchema с полной иерархией
+        def build_hierarchy(node, current_path=None):
+            if current_path is None:
+                current_path = {}
+            
+            obj = node["obj"]
+            
+            # Определяем тип объекта (предполагаем, что есть поле type)
+            obj_type = obj.get("type", "unknown")
+            
+            # Обновляем текущий путь иерархии
+            path = current_path.copy()
+            
+            # Заполняем иерархию в соответствии с типом
+            hierarchy_map = {
+                "university": "uni",
+                "campus": "campus",
+                "complex": "complex",
+                "corpus": "corpus",
+                "building": "building",
+                "floor": "floor",
+                "transit": "transit",
+                "room": "room",
+                "exit_point": "exit_point"
+            }
+            
+            if obj_type in hierarchy_map:
+                key = hierarchy_map[obj_type]
+                path[key] = obj["id"]
+            
+            # Создаем NodeType для этого объекта
+            node_type = NodeTypeSchema(
+                id=obj["id"],
+                **path
+            )
+            
+            # Рекурсивно обрабатываем детей
+            for child_node in node["children"]:
+                build_hierarchy(child_node, path)
+            
+            return node_type
+        
+        # Строим иерархию для всех корней
+        node_types = {}
+        for root in root_nodes:
+            root_type = build_hierarchy(root)
+            node_types[root_type.id] = root_type
+        
+        return NodeTypesSchema(node_types=node_types)
 
     async def __get_all_nodes(self) -> NodesSchema:
-        pass
+        async with httpx.AsyncClient() as client:
+            # Получаем список нод
+            response = await client.get(f"{self.object_service_url}/nodes/mapped")
+            if response.status_code != 200:
+                raise Exception(f"Failed to fetch mapped nodes: {response.status_code}")
+            
+            nodes_data = response.json()
+            
+        # Собираем словарь нод в формате {node_id: NodeSchema}
+        nodes_dict = {}
+        for node_data in nodes_data:
+            node_id = node_data["id"]
+            nodes_dict[node_id] = NodeSchema(
+                id=node_data["id"],
+                type_id=node_data["object_id"],
+                x=node_data["x"] if node_data["x"] is not None else 0.0,
+                y=node_data["y"] if node_data["y"] is not None else 0.0,
+                z=node_data["z"] if node_data["z"] is not None else 0.0,
+                latitude=node_data["latitude"],
+                longitude=node_data["longitude"],
+                name=node_data["short_name"]
+            )
+            
+        return NodesSchema(nodes=nodes_dict)
 
     async def __get_all_nodes_with_connections(self) -> ConnectionsSchema:
-        pass
+        async with httpx.AsyncClient() as client:
+            # Получаем все соединения узлов с помощью нового эндпоинта
+            response = await client.get(f"{self.object_service_url}/connections/mapper")
+            if response.status_code != 200:
+                raise Exception(f"Failed to fetch connections: {response.status_code}")
+            
+            connections_data = response.json()
+            
+        connections_dict = {}
+        for node1_id, connected_nodes in connections_data.items():
+            node1_id_int = int(node1_id)
+            connections_dict[node1_id_int] = {}
+            for node2_id, conn_data in connected_nodes.items():
+                node2_id_int = int(node2_id)
+                connections_dict[node1_id_int][node2_id_int] = ConnectionSchema(
+                    id=conn_data["id"],
+                    node1_id=conn_data["node1_id"],
+                    node2_id=conn_data["node2_id"],
+                    distance=conn_data["distance"]
+                )
+                
+        return ConnectionsSchema(nodes=connections_dict)
 
     async def start(self):
         nodetypes = await self.__get_node_types()
@@ -78,7 +208,7 @@ class Map:
 
         del nodes
         gc.collect()
-        nodes_with_connections = await self.__get_all_nodes_with_connections(node_id)
+        nodes_with_connections = await self.__get_all_nodes_with_connections()
         for node1_id, connected_nodes in nodes_with_connections.nodes.items():
             for node2_id, connection in connected_nodes.items():
                 self.all_conns[connection.id] = Connection(
@@ -88,8 +218,8 @@ class Map:
                     node2_id=connection.node2_id,
                 )
                 if (
-                    self.all_conns(node1_id).latitude is not None
-                    and self.all_conns(node2_id).latitude is not None
+                    self.nodes[node1_id].latitude is not None
+                    and self.nodes[node2_id].latitude is not None
                 ):
                     self.street_connections[node1_id][node2_id] = self.all_conns[
                         connection.id
@@ -150,8 +280,8 @@ class Map:
         node1_id = connection.node1_id
         node2_id = connection.node2_id
         if (
-            self.all_conns(node1_id).latitude is not None
-            and self.all_conns(node2_id).latitude is not None
+            self.nodes[node1_id].latitude is not None
+            and self.nodes[node2_id].latitude is not None
         ):
             self.street_connections[node1_id][node2_id] = self.all_conns[connection.id]
             self.street_connections[node2_id][node1_id] = self.all_conns[connection.id]

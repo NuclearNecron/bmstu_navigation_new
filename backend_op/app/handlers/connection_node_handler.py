@@ -95,3 +95,23 @@ class ConnectionNodeHandler(
             ConnectionNodeSchema.model_validate(row)
             for row in result.scalars().all()
         ]
+
+    async def get_all_connections_mapper(self, session: AsyncSession) -> dict[int, dict[int, dict]]:
+        log.info("Получаем все соединения узлов")
+        query = select(ConnectionNode)
+        result = await session.execute(query)
+        connections = result.scalars().all()
+        
+        result_dict = {}
+        for connection in connections:
+            node1_id = connection.node1_id
+            node2_id = connection.node2_id
+            if node1_id not in result_dict:
+                result_dict[node1_id] = {}
+            result_dict[node1_id][node2_id] = {
+                "id": connection.id,
+                "node1_id": connection.node1_id,
+                "node2_id": connection.node2_id,
+                "distance": connection.distance
+            }
+        return result_dict

@@ -36,7 +36,6 @@ class ObjectTypeDeleteParams(BaseModel):
 
 class ObjectTypeCreateParams(BaseModel):
     parent_id: int | None = None
-    number: int
     short_name: str
     full_name: str
     description: str | None = None
@@ -49,7 +48,6 @@ class ObjectTypeCreateParams(BaseModel):
 class ObjectTypeUpdateParams(BaseModel):
     id: int
     parent_id: int | None = None
-    number: int | None = None
     short_name: str | None = None
     full_name: str | None = None
     description: str | None = None
@@ -93,7 +91,6 @@ def get_object_type_create_params(
     parent_id: int | None = Body(
         None, description="Идентификатор родительского типа объекта"
     ),
-    number: int = Body(..., description="Порядковый номер"),
     short_name: str = Body(..., description="Краткое наименование", max_length=50),
     full_name: str = Body(..., description="Полное наименование", max_length=100),
     description: str | None = Body(None, description="Описание"),
@@ -101,7 +98,6 @@ def get_object_type_create_params(
 ) -> ObjectTypeCreateParams:
     return ObjectTypeCreateParams(
         parent_id=parent_id,
-        number=number,
         short_name=short_name,
         full_name=full_name,
         description=description,
@@ -114,7 +110,6 @@ def get_object_type_update_params(
     parent_id: int | None = Body(
         None, description="Идентификатор родительского типа объекта"
     ),
-    number: int | None = Body(None, description="Порядковый номер"),
     short_name: str | None = Body(
         None, description="Краткое наименование", max_length=50
     ),
@@ -127,7 +122,6 @@ def get_object_type_update_params(
     return ObjectTypeUpdateParams(
         id=id,
         parent_id=parent_id,
-        number=number,
         short_name=short_name,
         full_name=full_name,
         description=description,

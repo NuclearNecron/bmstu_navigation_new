@@ -35,7 +35,6 @@ class ConnectionTypeDeleteParams(BaseModel):
 
 
 class ConnectionTypeCreateParams(BaseModel):
-    number: int
     short_name: str
     full_name: str
     description: str | None = None
@@ -48,7 +47,6 @@ class ConnectionTypeCreateParams(BaseModel):
 
 class ConnectionTypeUpdateParams(BaseModel):
     id: int
-    number: int | None = None
     short_name: str | None = None
     full_name: str | None = None
     description: str | None = None
@@ -83,7 +81,6 @@ def get_connection_type_delete_params(
 
 
 def get_connection_type_create_params(
-    number: int = Body(..., description="Порядковый номер"),
     short_name: str = Body(..., description="Краткое наименование", max_length=50),
     full_name: str = Body(..., description="Полное наименование", max_length=100),
     description: str | None = Body(None, description="Описание"),
@@ -91,7 +88,6 @@ def get_connection_type_create_params(
     style: str | None = Body(None, description="Стиль соединения"),
 ) -> ConnectionTypeCreateParams:
     return ConnectionTypeCreateParams(
-        number=number,
         short_name=short_name,
         full_name=full_name,
         description=description,
@@ -102,7 +98,6 @@ def get_connection_type_create_params(
 
 def get_connection_type_update_params(
     id: int = Path(..., description="Идентификатор типа соединения", ge=1),
-    number: int | None = Body(None, description="Порядковый номер"),
     short_name: str | None = Body(None, description="Краткое наименование", max_length=50),
     full_name: str | None = Body(None, description="Полное наименование", max_length=100),
     description: str | None = Body(None, description="Описание"),
@@ -111,7 +106,6 @@ def get_connection_type_update_params(
 ) -> ConnectionTypeUpdateParams:
     return ConnectionTypeUpdateParams(
         id=id,
-        number=number,
         short_name=short_name,
         full_name=full_name,
         description=description,

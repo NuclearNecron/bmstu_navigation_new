@@ -68,6 +68,18 @@ async def get_all_connection_nodes(
     result = await handler.get_all(session)
     return JSONResponse(content=[obj.model_dump() for obj in result])
 
+@router.get("/mapper", response_model=list[ConnectionNodeSchema])
+async def get_all_connection_nodes_mapper(
+    session: AsyncSession = SessionDep,
+    params: ConnectionNodeGetAllParams = Depends(get_connection_node_get_all_params),
+):
+    """
+    Получить список всех соединений узлов.
+    """
+    handler = ConnectionNodeHandler()
+    result = await handler.get_all_connections_mapper(session)
+    return JSONResponse(content=result)
+
 
 @router.get("/page", response_model=list[ConnectionNodeSchema])
 async def get_paginated_connection_nodes(

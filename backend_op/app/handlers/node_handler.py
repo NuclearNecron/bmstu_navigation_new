@@ -10,15 +10,14 @@ from app.schemas.graph_models_schemas import (
     NodeCreateSchema,
     NodeUpdateSchema,
     NodeSchema,
+    NodeMapperSchema,
 )
 
 log = logging.getLogger(__name__)
 
 
 class NodeHandler(BaseHandler[NodeCreateSchema, NodeUpdateSchema, NodeSchema]):
-    async def create(
-        self, session: AsyncSession, data: NodeCreateSchema
-    ) -> NodeSchema:
+    async def create(self, session: AsyncSession, data: NodeCreateSchema) -> NodeSchema:
         log.info("Создаём запись Node")
         instance = Node(**data.model_dump())
         session.add(instance)
@@ -34,9 +33,7 @@ class NodeHandler(BaseHandler[NodeCreateSchema, NodeUpdateSchema, NodeSchema]):
         if instance is None:
             return None
 
-        for field, value in data.model_dump(
-            exclude_unset=True, exclude={"id"}
-        ).items():
+        for field, value in data.model_dump(exclude_unset=True, exclude={"id"}).items():
             setattr(instance, field, value)
 
         await session.commit()
@@ -64,10 +61,21 @@ class NodeHandler(BaseHandler[NodeCreateSchema, NodeUpdateSchema, NodeSchema]):
         log.info("Получаем все записи Node")
         query = select(Node)
         result = await session.execute(query)
-        return [
-            NodeSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [NodeSchema.model_validate(row) for row in result.scalars().all()]
+
+    async def get_all_mapped(self, session: AsyncSession) -> list[NodeMapperSchema]:
+        query = select(
+            Node.id,
+            Node.object_id,
+            Node.latitude,
+            Node.longitude,
+            Node.short_name,
+            Node.x,
+            Node.y,
+            Node.z,
+        )
+        result = await session.execute(query)
+        return [NodeMapperSchema.model_validate(row) for row in result.scalars().all()]
 
     async def get_paginated(
         self, session: AsyncSession, pagination: Pagination
@@ -83,7 +91,4 @@ class NodeHandler(BaseHandler[NodeCreateSchema, NodeUpdateSchema, NodeSchema]):
             .limit(pagination.limit)
         )
         result = await session.execute(query)
-        return [
-            NodeSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [NodeSchema.model_validate(row) for row in result.scalars().all()]

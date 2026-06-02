@@ -5,7 +5,6 @@ class ObjectTypeSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     parent_id: int | None
-    number: int
     short_name: str
     full_name: str
     description: str | None
@@ -14,7 +13,6 @@ class ObjectTypeSchema(BaseModel):
 
 class ObjectTypeCreateSchema(BaseModel):
     parent_id: int | None = None
-    number: int
     short_name: str
     full_name: str
     description: str | None = None
@@ -24,7 +22,6 @@ class ObjectTypeCreateSchema(BaseModel):
 class utObjectTypeEditSchema(BaseModel):
     id: int
     parent_id: int | None = None
-    number: int | None = None
     short_name: str | None = None
     full_name: str | None = None
     description: str | None = None
@@ -37,7 +34,6 @@ class ObjectKindSchema(BaseModel):
     id: int
     parent_id: int | None
     type_id: int
-    number: int
     short_name: str
     full_name: str
     description: str | None
@@ -47,7 +43,6 @@ class ObjectKindSchema(BaseModel):
 class ObjectKindCreateSchema(BaseModel):
     parent_id: int | None = None
     type_id: int
-    number: int
     short_name: str
     full_name: str
     description: str | None = None
@@ -58,7 +53,6 @@ class ObjectKindUpdateSchema(BaseModel):
     id: int
     parent_id: int | None = None
     type_id: int | None = None
-    number: int | None = None
     short_name: str | None = None
     full_name: str | None = None
     description: str | None = None
@@ -69,7 +63,6 @@ class ObjectStateSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    number: int
     short_name: str
     full_name: str
     description: str | None
@@ -77,7 +70,7 @@ class ObjectStateSchema(BaseModel):
 
 
 class ObjectStateCreateSchema(BaseModel):
-    number: int
+
     short_name: str
     full_name: str
     description: str | None = None
@@ -86,7 +79,6 @@ class ObjectStateCreateSchema(BaseModel):
 
 class ObjectStateUpdateSchema(BaseModel):
     id: int
-    number: int | None = None
     short_name: str | None = None
     full_name: str | None = None
     description: str | None = None
@@ -97,7 +89,6 @@ class ConnectionTypeSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    number: int
     short_name: str
     full_name: str
     description: str | None
@@ -106,7 +97,6 @@ class ConnectionTypeSchema(BaseModel):
 
 
 class ConnectionTypeCreateSchema(BaseModel):
-    number: int
     short_name: str
     full_name: str
     description: str | None = None
@@ -116,7 +106,6 @@ class ConnectionTypeCreateSchema(BaseModel):
 
 class ConnectionTypeUpdateSchema(BaseModel):
     id: int
-    number: int | None = None
     short_name: str | None = None
     full_name: str | None = None
     description: str | None = None

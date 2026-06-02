@@ -20,7 +20,7 @@ from app.params.node_params import (
     get_node_paginated_params,
     get_node_update_params,
 )
-from app.schemas.graph_models_schemas import NodeSchema
+from app.schemas.graph_models_schemas import NodeSchema,NodeMapperSchema
 
 router = APIRouter(
     prefix="/nodes",
@@ -83,6 +83,18 @@ async def get_all_nodes(
     """
     handler = NodeHandler()
     result = await handler.get_all(session)
+    return JSONResponse(content=[obj.model_dump() for obj in result])
+
+@router.get("/mapped", response_model=list[NodeMapperSchema])
+async def get_all_nodes(
+    session: AsyncSession = SessionDep,
+    params: NodeGetAllParams = Depends(get_node_get_all_params),
+):
+    """
+    Получить список всех узлов.
+    """
+    handler = NodeHandler()
+    result = await handler.get_all_mapped(session)
     return JSONResponse(content=[obj.model_dump() for obj in result])
 
 

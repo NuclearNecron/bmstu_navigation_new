@@ -17,7 +17,6 @@ class Object(db):
     state_id = Column(
         Integer, ForeignKey("object_state.id", ondelete="cascade"), nullable=False
     )
-    number = Column(Integer, unique=True, nullable=False)
     x_cord = Column(Float, unique=True, nullable=True)
     y_cord = Column(Float, unique=True, nullable=True)
     short_name = Column(String(50), unique=True, nullable=False)

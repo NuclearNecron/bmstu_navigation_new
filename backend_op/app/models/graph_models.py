@@ -8,7 +8,6 @@ class NodeType(db):
     __tablename__ = "node_type"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    number = Column(Integer, unique=True, nullable=False)
     short_name = Column(String(50), unique=True, nullable=False)
     full_name = Column(String(100), unique=True, nullable=False)
     description = Column(Text, nullable=True)
@@ -33,7 +32,6 @@ class Node(db):
     type_id = Column(
         Integer, ForeignKey("node_type.id", ondelete="cascade"), nullable=False
     )
-    number = Column(Integer, unique=True, nullable=False)
     short_name = Column(String(50), unique=True, nullable=False)
     full_name = Column(String(100), unique=True, nullable=False)
     SVG = Column(Text, nullable=True)
