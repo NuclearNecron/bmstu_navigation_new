@@ -14,7 +14,6 @@ class KafkaConsumer:
     def __init__(
         self,
         bootstrap_servers: str = None,
-        group_id: str = "nav-consumer",
         auto_offset_reset: str = "earliest",
         enable_auto_commit: bool = True,
         auto_commit_interval_ms: int = 1000,
@@ -22,7 +21,6 @@ class KafkaConsumer:
         self.bootstrap_servers = bootstrap_servers or os.getenv(
             "KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"
         )
-        self.group_id = group_id
         self.auto_offset_reset = auto_offset_reset
         self.enable_auto_commit = enable_auto_commit
         self.auto_commit_interval_ms = auto_commit_interval_ms
@@ -35,7 +33,6 @@ class KafkaConsumer:
             self.consumer = AIOKafkaConsumer(
                 self._topic,
                 bootstrap_servers=self.bootstrap_servers,
-                group_id=self.group_id,
                 auto_offset_reset=self.auto_offset_reset,
                 enable_auto_commit=self.enable_auto_commit,
                 auto_commit_interval_ms=self.auto_commit_interval_ms,
