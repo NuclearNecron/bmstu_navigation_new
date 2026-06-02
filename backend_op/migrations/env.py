@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env')) # noqa
+# load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env')) # noqa
 config = context.config
 
 section = config.config_ini_section 

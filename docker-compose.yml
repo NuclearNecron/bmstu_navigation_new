@@ -60,7 +60,7 @@ services:
       - backend_op
     environment:
       - OBJECT_SERVICE_URL=backend_op:8000
-    command: python main.py
+    command: sh -c "sleep 30 && python main.py"
   sync_service:
     build: 
       context: ./sync_service
@@ -76,7 +76,7 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - KAFKA_TOPIC=nav-updates
       - SYNC_HOSTS=[navigation_service:8880]
-    command: python main.py
+    command: sh -c "sleep 10 && python main.py"
   backend_op:
     build: 
       context: ./backend_op
@@ -95,4 +95,4 @@ services:
       - DB_PASSWORD=123
       - DB_NAME=uni_map
       - HOST_DB=database
-    command: sh -c "alembic upgrade head && python main.py"
+    command: sh -c "sleep 10 && alembic upgrade head && python main.py"

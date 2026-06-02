@@ -1,4 +1,3 @@
-from app.handler.sync_handler import SyncHandler
 from app.schemas.node_schemas import (
     NodeCreateParams,
     NodeUpdateParams,
