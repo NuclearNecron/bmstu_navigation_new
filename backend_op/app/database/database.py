@@ -14,7 +14,7 @@ load_dotenv(
 
 
 db_engine = create_async_engine(
-    f"postgresql+asyncpg://{os.environ.get("DB_USER")}:{os.environ.get("DB_PASSWORD")}@{os.environ.get("HOST_DB")}:5432/{os.environ.get("DB_NAME")}",  # noqa
+    f"postgresql+asyncpg://{os.environ.get('DB_USER')}:{os.environ.get('DB_PASSWORD')}@{os.environ.get('HOST_DB')}:5432/{os.environ.get('DB_NAME')}",  # noqa
     echo=True,
     future=True,
 )

@@ -23,14 +23,14 @@ from app.params.sync_params import (
     get_connection_delete_params,
 )
 
-router = APIRouter(
+sync_router = APIRouter(
     prefix="/sync",
     tags=["synchronization"],
     responses={404: {"description": "Not found"}},
 )
 
 
-@router.post("/node-type", response_model=dict, status_code=status.HTTP_201_CREATED)
+@sync_router.post("/node-type", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_node_type(
     request: Request,
     params: NodeTypeCreateParams = Depends(get_node_type_create_params),
@@ -54,7 +54,7 @@ async def create_node_type(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/node-type/{id}", response_model=dict)
+@sync_router.put("/node-type/{id}", response_model=dict)
 async def update_node_type(
     request: Request,
     params: NodeTypeUpdateParams = Depends(get_node_type_update_params),
@@ -75,7 +75,7 @@ async def update_node_type(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/node-type/{id}", response_model=dict)
+@sync_router.delete("/node-type/{id}", response_model=dict)
 async def delete_node_type(
     request: Request,
     params: NodeTypeDeleteParams = Depends(get_node_type_delete_params),
@@ -96,7 +96,7 @@ async def delete_node_type(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/node", response_model=dict, status_code=status.HTTP_201_CREATED)
+@sync_router.post("/node", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_node(
     request: Request,
     params: NodeCreateParams = Depends(get_node_create_params),
@@ -118,7 +118,7 @@ async def create_node(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/node/{id}", response_model=dict)
+@sync_router.put("/node/{id}", response_model=dict)
 async def update_node(
     request: Request,
     params: NodeUpdateParams = Depends(get_node_update_params),
@@ -139,7 +139,7 @@ async def update_node(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/node/{id}", response_model=dict)
+@sync_router.delete("/node/{id}", response_model=dict)
 async def delete_node(
     request: Request,
     params: NodeDeleteParams = Depends(get_node_delete_params),
@@ -160,7 +160,7 @@ async def delete_node(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/connection", response_model=dict, status_code=status.HTTP_201_CREATED)
+@sync_router.post("/connection", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_connection(
     request: Request,
     params: ConnectionCreateParams = Depends(get_connection_create_params),
@@ -182,7 +182,7 @@ async def create_connection(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/connection/{id}", response_model=dict)
+@sync_router.put("/connection/{id}", response_model=dict)
 async def update_connection(
     request: Request,
     params: ConnectionUpdateParams = Depends(get_connection_update_params),
@@ -203,7 +203,7 @@ async def update_connection(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/connection/{id}", response_model=dict)
+@sync_router.delete("/connection/{id}", response_model=dict)
 async def delete_connection(
     request: Request,
     params: ConnectionDeleteParams = Depends(get_connection_delete_params),

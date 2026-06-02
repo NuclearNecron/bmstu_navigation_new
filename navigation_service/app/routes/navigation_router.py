@@ -3,14 +3,14 @@ from fastapi.responses import JSONResponse
 
 from app.params.navigation_params import NavigationGetParams, get_navigation_params
 
-router = APIRouter(
+navigation_router = APIRouter(
     prefix="/navigation",
     tags=["navigation"],
     responses={404: {"description": "Not found"}},
 )
 
 
-@router.get("/", response_model=dict)
+@navigation_router.get("/", response_model=dict)
 async def get_navigation(
     request: Request, params: NavigationGetParams = Depends(get_navigation_params)
 ):

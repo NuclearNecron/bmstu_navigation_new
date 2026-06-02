@@ -19,7 +19,7 @@ class ObjectTypeCreateSchema(BaseModel):
     colour: str
 
 
-class utObjectTypeEditSchema(BaseModel):
+class ObjectTypeEditSchema(BaseModel):
     id: int
     parent_id: int | None = None
     short_name: str | None = None

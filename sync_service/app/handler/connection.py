@@ -1,4 +1,3 @@
-from app.handler.sync_handler import SyncHandler
 from app.schemas.connection_schemas import (
     ConnectionCreateParams,
     ConnectionUpdateParams,

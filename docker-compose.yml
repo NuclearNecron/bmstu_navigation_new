@@ -1,0 +1,98 @@
+networks:
+  bmstu_map:
+
+volumes:
+  dbvolume:
+  kafka_data:
+
+services:
+  database:
+    image: postgres
+    container_name: postgresql-bmstu
+    ports: 
+      - "6432:5432"
+    networks:
+      - bmstu_map
+    environment:
+      - POSTGRES_USER=map_admin
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=uni_map
+    volumes:
+      - dbvolume:/var/lib/postgresql
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka
+    container_name: kafka-bmstu
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_KRAFT_MODE: "true"  # This enables KRaft mode in Kafka.
+      KAFKA_PROCESS_ROLES: controller,broker  # Kafka acts as both broker and controller.
+      KAFKA_NODE_ID: 1  # A unique ID for this Kafka instance.
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"  # Defines the controller voters.
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LOG_DIRS: /var/lib/kafka/data  # Where Kafka stores its logs.
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1  # Since we're running one broker, one replica is enough.
+      KAFKA_LOG_RETENTION_HOURS: 24  
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0  # No delay for consumer rebalancing.
+      CLUSTER_ID: "anfgcbsFG67d"
+      KAFKA_MESSAGE_MAX_BYTES: "52428800"
+      KAFKA_REPLICA_FETCH_MAX_BYTES: "52428800"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - bmstu_map
+    command: /etc/confluent/docker/run
+  navigation_service:
+    build: 
+      context: ./navigation_service
+    container_name: navigation_service
+    ports:
+        - "8880:8000"
+    networks:
+      - bmstu_map
+    depends_on:
+      - backend_op
+    environment:
+      - OBJECT_SERVICE_URL=backend_op:8000
+    command: sh -c "sleep 30 && python main.py"
+  sync_service:
+    build: 
+      context: ./sync_service
+    container_name: sync_service
+    ports:
+        - "9000:8000"
+    networks:
+      - bmstu_map
+    depends_on:
+      - kafka
+      - navigation_service
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=nav-updates
+      - SYNC_HOSTS=[navigation_service:8880]
+    command: sh -c "sleep 10 && python main.py"
+  backend_op:
+    build: 
+      context: ./backend_op
+    container_name: backend_op
+    ports:
+        - "8000:8000"
+    networks:
+      - bmstu_map
+    depends_on:
+      - kafka
+      - database
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=nav-updates
+      - DB_USER=map_admin
+      - DB_PASSWORD=123
+      - DB_NAME=uni_map
+      - HOST_DB=database
+    command: sh -c "sleep 10 && alembic upgrade head && python main.py"

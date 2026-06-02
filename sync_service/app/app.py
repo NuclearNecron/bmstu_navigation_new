@@ -1,13 +1,8 @@
 import asyncio
-import logging
-import os
 from contextlib import asynccontextmanager
 
 from app.kafka.consumer import KafkaConsumer
 from fastapi import FastAPI
-
-
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

@@ -16,11 +16,15 @@ from app.schemas import (
     ChangeNodeTypeSchema,
 )
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Map:
 
     def __init__(self):
-        self.object_service_url = ""  # URL сервиса объектов
+        self.object_service_url = os.getenv("OBJECT_SERVICE_URL")  # URL сервиса объектов
         self.types = dict()
         self.nodes = dict()
         self.all_conns = dict()

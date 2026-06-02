@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
     session = await anext(get_session())
     app.state.db_session = session
 
-    asyncio.sleep(20)
+    await asyncio.sleep(20)
 
     # Initialize Kafka connection (singleton)
     kafka_conn = KafkaConnection()
