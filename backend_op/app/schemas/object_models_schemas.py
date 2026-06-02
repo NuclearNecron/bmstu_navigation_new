@@ -20,6 +20,7 @@ class ObjectSchema(BaseModel):
     x_cord: float | None
     y_cord: float | None
 
+
 class ObjectMapperSchema(BaseModel):
 
     id: int

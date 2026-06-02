@@ -32,10 +32,10 @@ async def lifespan(app: FastAPI):
     # Initialize Kafka connection (singleton)
     kafka_conn = KafkaConnection()
     await kafka_conn.start()
-    
+
     # Store in app state for access by routes
     app.state.kafka_connection = kafka_conn
-    
+
     try:
         yield
     finally:

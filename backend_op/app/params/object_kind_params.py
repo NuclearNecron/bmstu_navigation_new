@@ -90,7 +90,9 @@ def get_object_kind_delete_params(
 
 
 def get_object_kind_create_params(
-    parent_id: int | None = Body(None, description="Идентификатор родительского вида объекта"),
+    parent_id: int | None = Body(
+        None, description="Идентификатор родительского вида объекта"
+    ),
     type_id: int = Body(..., description="Идентификатор типа объекта"),
     short_name: str = Body(..., description="Краткое наименование", max_length=50),
     full_name: str = Body(..., description="Полное наименование", max_length=100),
@@ -109,10 +111,16 @@ def get_object_kind_create_params(
 
 def get_object_kind_update_params(
     id: int = Path(..., description="Идентификатор вида объекта", ge=1),
-    parent_id: int | None = Body(None, description="Идентификатор родительского вида объекта"),
+    parent_id: int | None = Body(
+        None, description="Идентификатор родительского вида объекта"
+    ),
     type_id: int | None = Body(None, description="Идентификатор типа объекта"),
-    short_name: str | None = Body(None, description="Краткое наименование", max_length=50),
-    full_name: str | None = Body(None, description="Полное наименование", max_length=100),
+    short_name: str | None = Body(
+        None, description="Краткое наименование", max_length=50
+    ),
+    full_name: str | None = Body(
+        None, description="Полное наименование", max_length=100
+    ),
     description: str | None = Body(None, description="Описание"),
     colour: str | None = Body(None, description="Цвет", max_length=50),
 ) -> ObjectKindUpdateParams:
@@ -128,6 +136,8 @@ def get_object_kind_update_params(
 
 
 def get_object_kind_get_children_params(
-    parent_id: int = Path(..., description="Идентификатор родительского вида объекта", ge=1),
+    parent_id: int = Path(
+        ..., description="Идентификатор родительского вида объекта", ge=1
+    ),
 ) -> ObjectKindGetChildrenParams:
     return ObjectKindGetChildrenParams(parent_id=parent_id)

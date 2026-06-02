@@ -34,7 +34,6 @@ class ConnectionNodeDeleteParams(BaseModel):
         return DeleteSchema(id=self.id)
 
 
-
 class ConnectionNodeCreateParams(BaseModel):
     node_id1: int
     node_id2: int
@@ -82,7 +81,9 @@ def get_connection_node_delete_params(
 def get_connection_node_create_params(
     node_id1: int = Body(..., description="Идентификатор первого узла"),
     node_id2: int = Body(..., description="Идентификатор второго узла"),
-    connection_type_id: int | None = Body(None, description="Идентификатор типа соединения"),
+    connection_type_id: int | None = Body(
+        None, description="Идентификатор типа соединения"
+    ),
     distance: float = Body(..., description="Расстояние между узлами"),
 ) -> ConnectionNodeCreateParams:
     return ConnectionNodeCreateParams(
@@ -97,7 +98,9 @@ def get_connection_node_update_params(
     id: int = Path(..., description="Идентификатор соединения узлов", ge=1),
     node_id1: int | None = Body(None, description="Идентификатор первого узла"),
     node_id2: int | None = Body(None, description="Идентификатор второго узла"),
-    connection_type_id: int | None = Body(None, description="Идентификатор типа соединения"),
+    connection_type_id: int | None = Body(
+        None, description="Идентификатор типа соединения"
+    ),
     distance: float | None = Body(None, description="Расстояние между узлами"),
 ) -> ConnectionNodeUpdateParams:
     return ConnectionNodeUpdateParams(

@@ -4,7 +4,7 @@ from typing import Optional, Dict, Any
 
 class NodeTypeSchema(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    
+
     id: int
     uni: Optional[int] = None
     campus: Optional[int] = None
@@ -16,13 +16,14 @@ class NodeTypeSchema(BaseModel):
     room: Optional[int] = None
     exit_point: Optional[int] = None
 
+
 class NodeTypesSchema(BaseModel):
     node_types: dict[int, NodeTypeSchema]
 
 
 class NodeSchema(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    
+
     id: int
     type_id: int
     x: float
@@ -32,12 +33,14 @@ class NodeSchema(BaseModel):
     longitude: Optional[float] = None
     name: str
 
+
 class NodesSchema(BaseModel):
     nodes: dict[int, NodeSchema]
 
+
 class ConnectionSchema(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    
+
     id: int
     distance: float
     node1_id: int
@@ -47,9 +50,10 @@ class ConnectionSchema(BaseModel):
 class ConnectionsSchema(BaseModel):
     nodes: dict[int, dict[int, ConnectionSchema]]
 
+
 class ChangeNodeSchema(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    
+
     id: int
     type_id: Optional[int] = None
     x: Optional[float] = None
@@ -59,9 +63,10 @@ class ChangeNodeSchema(BaseModel):
     longitude: Optional[float] = None
     name: Optional[str] = None
 
+
 class ChangeNodeTypeSchema(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    
+
     id: int
     uni: Optional[int] = None
     campus: Optional[int] = None
@@ -73,8 +78,9 @@ class ChangeNodeTypeSchema(BaseModel):
     room: Optional[int] = None
     exit_point: Optional[int] = None
 
+
 class ChangeConnectionSchema(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    
+
     id: int
     distance: Optional[float] = None

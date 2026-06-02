@@ -45,6 +45,7 @@ class NodeSchema(BaseModel):
     latitude: float | None
     longitude: float | None
 
+
 class NodeMapperSchema(BaseModel):
 
     id: int

@@ -98,8 +98,12 @@ def get_node_type_create_params(
 
 def get_node_type_update_params(
     id: int = Path(..., description="Идентификатор типа узла", ge=1),
-    short_name: str | None = Body(None, description="Краткое наименование", max_length=50),
-    full_name: str | None = Body(None, description="Полное наименование", max_length=100),
+    short_name: str | None = Body(
+        None, description="Краткое наименование", max_length=50
+    ),
+    full_name: str | None = Body(
+        None, description="Полное наименование", max_length=100
+    ),
     description: str | None = Body(None, description="Описание"),
     colour: str | None = Body(None, description="Цвет", max_length=50),
     size: float | None = Body(None, description="Размер узла"),

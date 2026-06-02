@@ -36,9 +36,7 @@ class NodeTypeHandler(
         if instance is None:
             return None
 
-        for field, value in data.model_dump(
-            exclude_unset=True, exclude={"id"}
-        ).items():
+        for field, value in data.model_dump(exclude_unset=True, exclude={"id"}).items():
             setattr(instance, field, value)
 
         await session.commit()
@@ -68,10 +66,7 @@ class NodeTypeHandler(
         log.info("Получаем все записи NodeType")
         query = select(NodeType)
         result = await session.execute(query)
-        return [
-            NodeTypeSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [NodeTypeSchema.model_validate(row) for row in result.scalars().all()]
 
     async def get_paginated(
         self, session: AsyncSession, pagination: Pagination
@@ -87,7 +82,4 @@ class NodeTypeHandler(
             .limit(pagination.limit)
         )
         result = await session.execute(query)
-        return [
-            NodeTypeSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [NodeTypeSchema.model_validate(row) for row in result.scalars().all()]

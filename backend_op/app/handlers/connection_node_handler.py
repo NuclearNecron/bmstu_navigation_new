@@ -40,9 +40,7 @@ class ConnectionNodeHandler(
         if instance is None:
             return None
 
-        for field, value in data.model_dump(
-            exclude_unset=True, exclude={"id"}
-        ).items():
+        for field, value in data.model_dump(exclude_unset=True, exclude={"id"}).items():
             setattr(instance, field, value)
 
         await session.commit()
@@ -73,8 +71,7 @@ class ConnectionNodeHandler(
         query = select(ConnectionNode)
         result = await session.execute(query)
         return [
-            ConnectionNodeSchema.model_validate(row)
-            for row in result.scalars().all()
+            ConnectionNodeSchema.model_validate(row) for row in result.scalars().all()
         ]
 
     async def get_paginated(
@@ -92,16 +89,17 @@ class ConnectionNodeHandler(
         )
         result = await session.execute(query)
         return [
-            ConnectionNodeSchema.model_validate(row)
-            for row in result.scalars().all()
+            ConnectionNodeSchema.model_validate(row) for row in result.scalars().all()
         ]
 
-    async def get_all_connections_mapper(self, session: AsyncSession) -> dict[int, dict[int, dict]]:
+    async def get_all_connections_mapper(
+        self, session: AsyncSession
+    ) -> dict[int, dict[int, dict]]:
         log.info("Получаем все соединения узлов")
         query = select(ConnectionNode)
         result = await session.execute(query)
         connections = result.scalars().all()
-        
+
         result_dict = {}
         for connection in connections:
             node1_id = connection.node1_id
@@ -112,6 +110,6 @@ class ConnectionNodeHandler(
                 "id": connection.id,
                 "node1_id": connection.node1_id,
                 "node2_id": connection.node2_id,
-                "distance": connection.distance
+                "distance": connection.distance,
             }
         return result_dict

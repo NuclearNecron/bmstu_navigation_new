@@ -14,13 +14,13 @@ class NodeType:
     ):
         self.uni = uni
         self.campus = campus
-        self.complex=complex
-        self.corpus=corpus
-        self.building=building
-        self.floor=floor
-        self.transit=transit
-        self.room=room
-        self.exit_point=exit_point
+        self.complex = complex
+        self.corpus = corpus
+        self.building = building
+        self.floor = floor
+        self.transit = transit
+        self.room = room
+        self.exit_point = exit_point
         self.realizations = list()
 
 
@@ -33,8 +33,8 @@ class Node:
         x: float,
         y: float,
         z: float,
-        latitude: float|None,
-        longitude:float|None,
+        latitude: float | None,
+        longitude: float | None,
         name: str,
     ):
         self.id = id
@@ -47,14 +47,13 @@ class Node:
         self.longitude = longitude
         self.name = name
 
-
     def __lt__(self, other):
         return self.id < other.id
 
 
 class Connection:
 
-    def __init__(self, id: int, distance: float,node1_id:int, node2_id:int):
+    def __init__(self, id: int, distance: float, node1_id: int, node2_id: int):
         self.id = id
         self.distance = distance
         self.node1_id = node1_id

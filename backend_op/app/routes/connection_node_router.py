@@ -30,6 +30,7 @@ router = APIRouter(
 
 SessionDep = Depends(get_session)
 
+
 async def validate_node_exists(node_id: int, session: AsyncSession):
     """Проверяет существование узла."""
     handler = NodeHandler()
@@ -37,21 +38,24 @@ async def validate_node_exists(node_id: int, session: AsyncSession):
     if node is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Node with id {node_id} not found"
+            detail=f"Node with id {node_id} not found",
         )
     return True
 
-async def validate_connection_type_exists(connection_type_id: int, session: AsyncSession):
+
+async def validate_connection_type_exists(
+    connection_type_id: int, session: AsyncSession
+):
     """Проверяет существование типа соединения. Если connection_type_id is None, возвращает True."""
     if connection_type_id is None:
         return True
-        
+
     handler = ConnectionTypeHandler()
     conn_type = await handler.get(session, connection_type_id)
     if conn_type is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Connection type with id {connection_type_id} not found"
+            detail=f"Connection type with id {connection_type_id} not found",
         )
     return True
 
@@ -67,6 +71,7 @@ async def get_all_connection_nodes(
     handler = ConnectionNodeHandler()
     result = await handler.get_all(session)
     return JSONResponse(content=[obj.model_dump() for obj in result])
+
 
 @router.get("/mapper", response_model=list[ConnectionNodeSchema])
 async def get_all_connection_nodes_mapper(
@@ -84,7 +89,9 @@ async def get_all_connection_nodes_mapper(
 @router.get("/page", response_model=list[ConnectionNodeSchema])
 async def get_paginated_connection_nodes(
     session: AsyncSession = SessionDep,
-    params: ConnectionNodePaginatedParams = Depends(get_connection_node_paginated_params),
+    params: ConnectionNodePaginatedParams = Depends(
+        get_connection_node_paginated_params
+    ),
 ):
     """
     Получить список соединений узлов с пагинацией.
@@ -109,7 +116,9 @@ async def get_connection_node(
     return JSONResponse(content=result.model_dump())
 
 
-@router.post("/", response_model=ConnectionNodeSchema, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=ConnectionNodeSchema, status_code=status.HTTP_201_CREATED
+)
 async def create_connection_node(
     session: AsyncSession = SessionDep,
     params: ConnectionNodeCreateParams = Depends(get_connection_node_create_params),
@@ -118,18 +127,20 @@ async def create_connection_node(
     Создать новое соединение узлов.
     """
     handler = ConnectionNodeHandler()
-    
+
     # Проверяем существование первого узла
     await validate_node_exists(params.node_id1, session)
-    
+
     # Проверяем существование второго узла
     await validate_node_exists(params.node_id2, session)
-    
+
     # Проверяем существование типа соединения
     await validate_connection_type_exists(params.connection_type_id, session)
-    
+
     result = await handler.create(session, params.to_create_schema())
-    return JSONResponse(content=result.model_dump(), status_code=status.HTTP_201_CREATED)
+    return JSONResponse(
+        content=result.model_dump(), status_code=status.HTTP_201_CREATED
+    )
 
 
 @router.put("/{id}", response_model=ConnectionNodeSchema)
@@ -141,29 +152,28 @@ async def update_connection_node(
     Обновить соединение узлов по ID.
     """
     handler = ConnectionNodeHandler()
-    
+
     # Проверяем существование обновляемого объекта
     existing = await handler.get(session, params.id)
     if existing is None:
         raise HTTPException(status_code=404, detail="Connection node not found")
-    
+
     # Проверяем существование первого узла, если он указан
     if params.node_id1 is not None:
         await validate_node_exists(params.node_id1, session)
-    
+
     # Проверяем существование второго узла, если он указан
     if params.node_id2 is not None:
         await validate_node_exists(params.node_id2, session)
-    
+
     # Проверяем существование типа соединения, если он указан
     if params.connection_type_id is not None:
         await validate_connection_type_exists(params.connection_type_id, session)
-    
+
     result = await handler.update(session, params.to_edit_schema())
     if result is None:
         raise HTTPException(status_code=404, detail="Connection node not found")
     return JSONResponse(content=result.model_dump())
-
 
 
 @router.delete("/{id}", response_model=dict)
@@ -178,4 +188,6 @@ async def delete_connection_node(
     deleted = await handler.delete(session, params.to_delete_schema())
     if not deleted:
         raise HTTPException(status_code=404, detail="Connection node not found")
-    return JSONResponse(content={"status": "success", "message": "Connection node deleted"})
+    return JSONResponse(
+        content={"status": "success", "message": "Connection node deleted"}
+    )

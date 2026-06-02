@@ -70,7 +70,6 @@ async def get_object_state(
     return JSONResponse(content=result.model_dump())
 
 
-
 @router.post("/", response_model=ObjectStateSchema, status_code=status.HTTP_201_CREATED)
 async def create_object_state(
     session: AsyncSession = SessionDep,
@@ -81,7 +80,9 @@ async def create_object_state(
     """
     handler = ObjectStateHandler()
     result = await handler.create(session, params.to_create_schema())
-    return JSONResponse(content=result.model_dump(), status_code=status.HTTP_201_CREATED)
+    return JSONResponse(
+        content=result.model_dump(), status_code=status.HTTP_201_CREATED
+    )
 
 
 @router.put("/{id}", response_model=ObjectStateSchema)
@@ -93,17 +94,16 @@ async def update_object_state(
     Обновить состояние объекта по ID.
     """
     handler = ObjectStateHandler()
-    
+
     # Проверяем существование обновляемого объекта
     existing = await handler.get(session, params.id)
     if existing is None:
         raise HTTPException(status_code=404, detail="Object state not found")
-    
+
     result = await handler.update(session, params.to_edit_schema())
     if result is None:
         raise HTTPException(status_code=404, detail="Object state not found")
     return JSONResponse(content=result.model_dump())
-
 
 
 @router.delete("/{id}", response_model=dict)
@@ -118,4 +118,6 @@ async def delete_object_state(
     deleted = await handler.delete(session, params.to_delete_schema())
     if not deleted:
         raise HTTPException(status_code=404, detail="Object state not found")
-    return JSONResponse(content={"status": "success", "message": "Object state deleted"})
+    return JSONResponse(
+        content={"status": "success", "message": "Object state deleted"}
+    )

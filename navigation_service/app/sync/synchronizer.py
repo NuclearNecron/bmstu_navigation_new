@@ -8,28 +8,28 @@ class Synchronizer:
     Класс для синхронного выполнения операций.
     Обеспечивает, что только одна операция выполняется в каждый момент времени.
     """
-    
+
     def __init__(self):
         self._lock = threading.Lock()
-    
+
     def execute(self, func: Callable, *args, **kwargs) -> Any:
         """
         Выполнить функцию синхронно с блокировкой.
-        
+
         Args:
             func: Функция для выполнения
             *args: Позиционные аргументы
             **kwargs: Именованные аргументы
-            
+
         Returns:
             Результат выполнения функции
-            
+
         Raises:
             Любое исключение, которое может выбросить функция
         """
         with self._lock:
             return func(*args, **kwargs)
-            
+
     async def execute_async(self, func: Callable, *args, **kwargs) -> Any:
         """
         Асинхронная обертка для выполнения функции синхронно.

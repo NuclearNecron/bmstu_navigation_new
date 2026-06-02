@@ -98,8 +98,12 @@ def get_connection_type_create_params(
 
 def get_connection_type_update_params(
     id: int = Path(..., description="Идентификатор типа соединения", ge=1),
-    short_name: str | None = Body(None, description="Краткое наименование", max_length=50),
-    full_name: str | None = Body(None, description="Полное наименование", max_length=100),
+    short_name: str | None = Body(
+        None, description="Краткое наименование", max_length=50
+    ),
+    full_name: str | None = Body(
+        None, description="Полное наименование", max_length=100
+    ),
     description: str | None = Body(None, description="Описание"),
     colour: str | None = Body(None, description="Цвет", max_length=50),
     style: str | None = Body(None, description="Стиль соединения"),

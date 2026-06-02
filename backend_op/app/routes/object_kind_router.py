@@ -32,30 +32,33 @@ router = APIRouter(
 SessionDep = Depends(get_session)
 
 
-async def validate_parent_exists(parent_id: int, handler: ObjectKindHandler, session: AsyncSession):
+async def validate_parent_exists(
+    parent_id: int, handler: ObjectKindHandler, session: AsyncSession
+):
     """Проверяет существование родительского объекта."""
     if parent_id is None:
         return True
-    
+
     parent = await handler.get(session, parent_id)
     if parent is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Parent object kind with id {parent_id} not found"
+            detail=f"Parent object kind with id {parent_id} not found",
         )
     return True
+
 
 async def validate_type_exists(type_id: int, session: AsyncSession):
     """Проверяет существование типа объекта. Если type_id is None, возвращает True."""
     if type_id is None:
         return True
-        
+
     handler = ObjectTypeHandler()
     obj_type = await handler.get(session, type_id)
     if obj_type is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Object type with id {type_id} not found"
+            detail=f"Object type with id {type_id} not found",
         )
     return True
 
@@ -86,7 +89,6 @@ async def get_paginated_object_kinds(
     return JSONResponse(content=[obj.model_dump() for obj in result])
 
 
-
 @router.get("/{id}", response_model=ObjectKindSchema)
 async def get_object_kind(
     session: AsyncSession = SessionDep,
@@ -102,7 +104,6 @@ async def get_object_kind(
     return JSONResponse(content=result.model_dump())
 
 
-
 @router.post("/", response_model=ObjectKindSchema, status_code=status.HTTP_201_CREATED)
 async def create_object_kind(
     session: AsyncSession = SessionDep,
@@ -112,17 +113,18 @@ async def create_object_kind(
     Создать новый вид объекта.
     """
     handler = ObjectKindHandler()
-    
+
     # Проверяем существование родительского объекта
     if params.parent_id is not None:
         await validate_parent_exists(params.parent_id, handler, session)
-    
+
     # Проверяем существование типа объекта
     await validate_type_exists(params.type_id, session)
-    
-    result = await handler.create(session, params.to_create_schema())
-    return JSONResponse(content=result.model_dump(), status_code=status.HTTP_201_CREATED)
 
+    result = await handler.create(session, params.to_create_schema())
+    return JSONResponse(
+        content=result.model_dump(), status_code=status.HTTP_201_CREATED
+    )
 
 
 @router.put("/{id}", response_model=ObjectKindSchema)
@@ -134,25 +136,24 @@ async def update_object_kind(
     Обновить вид объекта по ID.
     """
     handler = ObjectKindHandler()
-    
+
     # Проверяем существование обновляемого объекта
     existing = await handler.get(session, params.id)
     if existing is None:
         raise HTTPException(status_code=404, detail="Object kind not found")
-    
+
     # Проверяем существование родительского объекта, если он указан
     if params.parent_id is not None:
         await validate_parent_exists(params.parent_id, handler, session)
-    
+
     # Проверяем существование типа объекта, если он указан
     if params.type_id is not None:
         await validate_type_exists(params.type_id, session)
-    
+
     result = await handler.update(session, params.to_edit_schema())
     if result is None:
         raise HTTPException(status_code=404, detail="Object kind not found")
     return JSONResponse(content=result.model_dump())
-
 
 
 @router.delete("/{id}", response_model=dict)
@@ -168,7 +169,6 @@ async def delete_object_kind(
     if not deleted:
         raise HTTPException(status_code=404, detail="Object kind not found")
     return JSONResponse(content={"status": "success", "message": "Object kind deleted"})
-
 
 
 @router.get("/parent/{parent_id}", response_model=list[ObjectKindSchema])

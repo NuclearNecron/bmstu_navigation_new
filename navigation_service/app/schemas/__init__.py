@@ -1,4 +1,14 @@
-from .map_schemas import NodeTypeSchema, NodeSchema, ConnectionSchema, NodeTypesSchema, NodesSchema, ConnectionsSchema, ChangeNodeSchema, ChangeNodeTypeSchema, ChangeConnectionSchema
+from .map_schemas import (
+    NodeTypeSchema,
+    NodeSchema,
+    ConnectionSchema,
+    NodeTypesSchema,
+    NodesSchema,
+    ConnectionsSchema,
+    ChangeNodeSchema,
+    ChangeNodeTypeSchema,
+    ChangeConnectionSchema,
+)
 
 __all__ = [
     "NodeTypeSchema",
@@ -9,5 +19,5 @@ __all__ = [
     "ConnectionsSchema",
     "ChangeNodeSchema",
     "ChangeNodeTypeSchema",
-    "ChangeConnectionSchema"
+    "ChangeConnectionSchema",
 ]

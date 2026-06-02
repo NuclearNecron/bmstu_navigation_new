@@ -80,7 +80,9 @@ async def create_node_type(
     """
     handler = NodeTypeHandler()
     result = await handler.create(session, params.to_create_schema())
-    return JSONResponse(content=result.model_dump(), status_code=status.HTTP_201_CREATED)
+    return JSONResponse(
+        content=result.model_dump(), status_code=status.HTTP_201_CREATED
+    )
 
 
 @router.put("/{id}", response_model=NodeTypeSchema)
@@ -92,12 +94,12 @@ async def update_node_type(
     Обновить тип узла по ID.
     """
     handler = NodeTypeHandler()
-    
+
     # Проверяем существование обновляемого объекта
     existing = await handler.get(session, params.id)
     if existing is None:
         raise HTTPException(status_code=404, detail="Node type not found")
-    
+
     result = await handler.update(session, params.to_edit_schema())
     if result is None:
         raise HTTPException(status_code=404, detail="Node type not found")

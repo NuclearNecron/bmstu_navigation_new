@@ -2,18 +2,20 @@ from fastapi import Body, Path
 from pydantic import BaseModel
 
 from app.schemas.map_schemas import (
-    NodeTypeSchema, 
-    NodeSchema, 
+    NodeTypeSchema,
+    NodeSchema,
     ConnectionSchema,
     ChangeNodeTypeSchema,
     ChangeNodeSchema,
-    ChangeConnectionSchema
+    ChangeConnectionSchema,
 )
 
 # === Параметры для операций с типами узлов (NodeType) ===
 
+
 class NodeTypeCreateParams(BaseModel):
     """Параметры для создания типа узла."""
+
     id: int
     uni: int | None = None
     campus: int | None = None
@@ -31,6 +33,7 @@ class NodeTypeCreateParams(BaseModel):
 
 class NodeTypeUpdateParams(BaseModel):
     """Параметры для обновления типа узла."""
+
     id: int
     uni: int | None = None
     campus: int | None = None
@@ -48,12 +51,16 @@ class NodeTypeUpdateParams(BaseModel):
 
 class NodeTypeDeleteParams(BaseModel):
     """Параметры для удаления типа узла."""
+
     id: int
+
 
 # === Параметры для операций с узлами (Node) ===
 
+
 class NodeCreateParams(BaseModel):
     """Параметры для создания узла."""
+
     id: int
     type_id: int
     x: float
@@ -69,6 +76,7 @@ class NodeCreateParams(BaseModel):
 
 class NodeUpdateParams(BaseModel):
     """Параметры для обновления узла."""
+
     id: int
     type_id: int | None = None
     x: float | None = None
@@ -84,12 +92,16 @@ class NodeUpdateParams(BaseModel):
 
 class NodeDeleteParams(BaseModel):
     """Параметры для удаления узла."""
+
     id: int
+
 
 # === Параметры для операций с связями (Connection) ===
 
+
 class ConnectionCreateParams(BaseModel):
     """Параметры для создания связи."""
+
     id: int
     distance: float
     node1_id: int
@@ -101,6 +113,7 @@ class ConnectionCreateParams(BaseModel):
 
 class ConnectionUpdateParams(BaseModel):
     """Параметры для обновления связи."""
+
     id: int
     distance: float | None = None
 
@@ -110,9 +123,12 @@ class ConnectionUpdateParams(BaseModel):
 
 class ConnectionDeleteParams(BaseModel):
     """Параметры для удаления связи."""
+
     id: int
 
+
 # === Зависимости для внедрения параметров ===
+
 
 def get_node_type_create_params(
     id: int = Body(..., description="Идентификатор типа узла"),
@@ -139,6 +155,7 @@ def get_node_type_create_params(
         exit_point=exit_point,
     )
 
+
 def get_node_type_update_params(
     id: int = Path(..., description="Идентификатор типа узла", ge=1),
     uni: int | None = Body(None, description="Идентификатор университета"),
@@ -164,10 +181,12 @@ def get_node_type_update_params(
         exit_point=exit_point,
     )
 
+
 def get_node_type_delete_params(
     id: int = Path(..., description="Идентификатор типа узла", ge=1),
 ) -> NodeTypeDeleteParams:
     return NodeTypeDeleteParams(id=id)
+
 
 def get_node_create_params(
     id: int = Body(..., description="Идентификатор узла"),
@@ -190,6 +209,7 @@ def get_node_create_params(
         name=name,
     )
 
+
 def get_node_update_params(
     id: int = Path(..., description="Идентификатор узла", ge=1),
     type_id: int | None = Body(None, description="Идентификатор типа узла"),
@@ -211,10 +231,12 @@ def get_node_update_params(
         name=name,
     )
 
+
 def get_node_delete_params(
     id: int = Path(..., description="Идентификатор узла", ge=1),
 ) -> NodeDeleteParams:
     return NodeDeleteParams(id=id)
+
 
 def get_connection_create_params(
     id: int = Body(..., description="Идентификатор связи"),
@@ -229,11 +251,13 @@ def get_connection_create_params(
         node2_id=node2_id,
     )
 
+
 def get_connection_update_params(
     id: int = Path(..., description="Идентификатор связи", ge=1),
     distance: float | None = Body(None, description="Дистанция между узлами"),
 ) -> ConnectionUpdateParams:
     return ConnectionUpdateParams(id=id, distance=distance)
+
 
 def get_connection_delete_params(
     id: int = Path(..., description="Идентификатор связи", ge=1),

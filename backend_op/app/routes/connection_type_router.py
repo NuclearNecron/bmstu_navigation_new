@@ -45,7 +45,9 @@ async def get_all_connection_types(
 @router.get("/page", response_model=list[ConnectionTypeSchema])
 async def get_paginated_connection_types(
     session: AsyncSession = SessionDep,
-    params: ConnectionTypePaginatedParams = Depends(get_connection_type_paginated_params),
+    params: ConnectionTypePaginatedParams = Depends(
+        get_connection_type_paginated_params
+    ),
 ):
     """
     Получить список типов соединений с пагинацией.
@@ -70,8 +72,9 @@ async def get_connection_type(
     return JSONResponse(content=result.model_dump())
 
 
-
-@router.post("/", response_model=ConnectionTypeSchema, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=ConnectionTypeSchema, status_code=status.HTTP_201_CREATED
+)
 async def create_connection_type(
     session: AsyncSession = SessionDep,
     params: ConnectionTypeCreateParams = Depends(get_connection_type_create_params),
@@ -81,7 +84,9 @@ async def create_connection_type(
     """
     handler = ConnectionTypeHandler()
     result = await handler.create(session, params.to_create_schema())
-    return JSONResponse(content=result.model_dump(), status_code=status.HTTP_201_CREATED)
+    return JSONResponse(
+        content=result.model_dump(), status_code=status.HTTP_201_CREATED
+    )
 
 
 @router.put("/{id}", response_model=ConnectionTypeSchema)
@@ -93,17 +98,16 @@ async def update_connection_type(
     Обновить тип соединения по ID.
     """
     handler = ConnectionTypeHandler()
-    
+
     # Проверяем существование обновляемого объекта
     existing = await handler.get(session, params.id)
     if existing is None:
         raise HTTPException(status_code=404, detail="Connection type not found")
-    
+
     result = await handler.update(session, params.to_edit_schema())
     if result is None:
         raise HTTPException(status_code=404, detail="Connection type not found")
     return JSONResponse(content=result.model_dump())
-
 
 
 @router.delete("/{id}", response_model=dict)
@@ -118,4 +122,6 @@ async def delete_connection_type(
     deleted = await handler.delete(session, params.to_delete_schema())
     if not deleted:
         raise HTTPException(status_code=404, detail="Connection type not found")
-    return JSONResponse(content={"status": "success", "message": "Connection type deleted"})
+    return JSONResponse(
+        content={"status": "success", "message": "Connection type deleted"}
+    )

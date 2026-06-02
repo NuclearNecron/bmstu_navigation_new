@@ -5,16 +5,18 @@ import json
 
 class KafkaConnection:
     _instance = None
-    
+
     def __new__(cls, bootstrap_servers: str = None):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
-    
+
     def __init__(self, bootstrap_servers: str = None):
         # Only initialize once
-        if not hasattr(self, 'initialized'):
-            self.bootstrap_servers = bootstrap_servers or os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+        if not hasattr(self, "initialized"):
+            self.bootstrap_servers = bootstrap_servers or os.getenv(
+                "KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"
+            )
             self.producer = None
             self.initialized = True
 
@@ -23,7 +25,7 @@ class KafkaConnection:
         if self.producer is None:
             self.producer = AIOKafkaProducer(
                 bootstrap_servers=self.bootstrap_servers,
-                value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+                value_serializer=lambda v: json.dumps(v).encode("utf-8"),
                 max_request_size=52_428_800,
             )
             await self.producer.start()
@@ -38,11 +40,11 @@ class KafkaConnection:
         """Send a message to Kafka topic."""
         if not self.producer:
             raise RuntimeError("Kafka producer not initialized. Call start() first.")
-            
+
         try:
             # Convert message to JSON and encode to bytes
-            value = json.dumps(message).encode('utf-8')
-            
+            value = json.dumps(message).encode("utf-8")
+
             await self.producer.send_and_wait(
                 topic=topic,
                 value=value,

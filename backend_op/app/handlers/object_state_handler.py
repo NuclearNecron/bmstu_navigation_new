@@ -36,9 +36,7 @@ class ObjectStateHandler(
         if instance is None:
             return None
 
-        for field, value in data.model_dump(
-            exclude_unset=True, exclude={"id"}
-        ).items():
+        for field, value in data.model_dump(exclude_unset=True, exclude={"id"}).items():
             setattr(instance, field, value)
 
         await session.commit()
@@ -68,10 +66,7 @@ class ObjectStateHandler(
         log.info("Получаем все записи ObjectState")
         query = select(ObjectState)
         result = await session.execute(query)
-        return [
-            ObjectStateSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [ObjectStateSchema.model_validate(row) for row in result.scalars().all()]
 
     async def get_paginated(
         self, session: AsyncSession, pagination: Pagination
@@ -87,7 +82,4 @@ class ObjectStateHandler(
             .limit(pagination.limit)
         )
         result = await session.execute(query)
-        return [
-            ObjectStateSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [ObjectStateSchema.model_validate(row) for row in result.scalars().all()]

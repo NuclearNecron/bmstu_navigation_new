@@ -81,7 +81,9 @@ def get_connection_object_delete_params(
 def get_connection_object_create_params(
     object_id1: int = Body(..., description="Идентификатор первого объекта"),
     object_id2: int = Body(..., description="Идентификатор второго объекта"),
-    connection_type_id: int | None = Body(None, description="Идентификатор типа соединения"),
+    connection_type_id: int | None = Body(
+        None, description="Идентификатор типа соединения"
+    ),
     distance: float = Body(..., description="Расстояние между объектами"),
 ) -> ConnectionObjectCreateParams:
     return ConnectionObjectCreateParams(
@@ -96,7 +98,9 @@ def get_connection_object_update_params(
     id: int = Path(..., description="Идентификатор соединения объектов", ge=1),
     object_id1: int | None = Body(None, description="Идентификатор первого объекта"),
     object_id2: int | None = Body(None, description="Идентификатор второго объекта"),
-    connection_type_id: int | None = Body(None, description="Идентификатор типа соединения"),
+    connection_type_id: int | None = Body(
+        None, description="Идентификатор типа соединения"
+    ),
     distance: float | None = Body(None, description="Расстояние между объектами"),
 ) -> ConnectionObjectUpdateParams:
     return ConnectionObjectUpdateParams(

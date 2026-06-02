@@ -130,6 +130,8 @@ def get_object_type_update_params(
 
 
 def get_object_type_get_children_params(
-    parent_id: int = Path(..., description="Идентификатор родительского типа объекта", ge=1),
+    parent_id: int = Path(
+        ..., description="Идентификатор родительского типа объекта", ge=1
+    ),
 ) -> ObjectTypeGetChildrenParams:
     return ObjectTypeGetChildrenParams(parent_id=parent_id)

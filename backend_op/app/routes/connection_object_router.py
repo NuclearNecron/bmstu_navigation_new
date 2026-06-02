@@ -30,6 +30,7 @@ router = APIRouter(
 
 SessionDep = Depends(get_session)
 
+
 async def validate_object_exists(object_id: int, session: AsyncSession):
     """Проверяет существование объекта."""
     handler = ObjectHandler()
@@ -37,21 +38,24 @@ async def validate_object_exists(object_id: int, session: AsyncSession):
     if obj is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Object with id {object_id} not found"
+            detail=f"Object with id {object_id} not found",
         )
     return True
 
-async def validate_connection_type_exists(connection_type_id: int, session: AsyncSession):
+
+async def validate_connection_type_exists(
+    connection_type_id: int, session: AsyncSession
+):
     """Проверяет существование типа соединения. Если connection_type_id is None, возвращает True."""
     if connection_type_id is None:
         return True
-        
+
     handler = ConnectionTypeHandler()
     conn_type = await handler.get(session, connection_type_id)
     if conn_type is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Connection type with id {connection_type_id} not found"
+            detail=f"Connection type with id {connection_type_id} not found",
         )
     return True
 
@@ -59,7 +63,9 @@ async def validate_connection_type_exists(connection_type_id: int, session: Asyn
 @router.get("/", response_model=list[ConnectionObjectSchema])
 async def get_all_connection_objects(
     session: AsyncSession = SessionDep,
-    params: ConnectionObjectGetAllParams = Depends(get_connection_object_get_all_params),
+    params: ConnectionObjectGetAllParams = Depends(
+        get_connection_object_get_all_params
+    ),
 ):
     """
     Получить список всех соединений объектов.
@@ -72,7 +78,9 @@ async def get_all_connection_objects(
 @router.get("/page", response_model=list[ConnectionObjectSchema])
 async def get_paginated_connection_objects(
     session: AsyncSession = SessionDep,
-    params: ConnectionObjectPaginatedParams = Depends(get_connection_object_paginated_params),
+    params: ConnectionObjectPaginatedParams = Depends(
+        get_connection_object_paginated_params
+    ),
 ):
     """
     Получить список соединений объектов с пагинацией.
@@ -97,8 +105,9 @@ async def get_connection_object(
     return JSONResponse(content=result.model_dump())
 
 
-
-@router.post("/", response_model=ConnectionObjectSchema, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/", response_model=ConnectionObjectSchema, status_code=status.HTTP_201_CREATED
+)
 async def create_connection_object(
     session: AsyncSession = SessionDep,
     params: ConnectionObjectCreateParams = Depends(get_connection_object_create_params),
@@ -107,18 +116,20 @@ async def create_connection_object(
     Создать новое соединение объектов.
     """
     handler = ConnectionObjectHandler()
-    
+
     # Проверяем существование первого объекта
     await validate_object_exists(params.object_id1, session)
-    
+
     # Проверяем существование второго объекта
     await validate_object_exists(params.object_id2, session)
-    
+
     # Проверяем существование типа соединения
     await validate_connection_type_exists(params.connection_type_id, session)
-    
+
     result = await handler.create(session, params.to_create_schema())
-    return JSONResponse(content=result.model_dump(), status_code=status.HTTP_201_CREATED)
+    return JSONResponse(
+        content=result.model_dump(), status_code=status.HTTP_201_CREATED
+    )
 
 
 @router.put("/{id}", response_model=ConnectionObjectSchema)
@@ -130,29 +141,28 @@ async def update_connection_object(
     Обновить соединение объектов по ID.
     """
     handler = ConnectionObjectHandler()
-    
+
     # Проверяем существование обновляемого объекта
     existing = await handler.get(session, params.id)
     if existing is None:
         raise HTTPException(status_code=404, detail="Connection object not found")
-    
+
     # Проверяем существование первого объекта, если он указан
     if params.object_id1 is not None:
         await validate_object_exists(params.object_id1, session)
-    
+
     # Проверяем существование второго объекта, если он указан
     if params.object_id2 is not None:
         await validate_object_exists(params.object_id2, session)
-    
+
     # Проверяем существование типа соединения, если он указан
     if params.connection_type_id is not None:
         await validate_connection_type_exists(params.connection_type_id, session)
-    
+
     result = await handler.update(session, params.to_edit_schema())
     if result is None:
         raise HTTPException(status_code=404, detail="Connection object not found")
     return JSONResponse(content=result.model_dump())
-
 
 
 @router.delete("/{id}", response_model=dict)
@@ -167,4 +177,6 @@ async def delete_connection_object(
     deleted = await handler.delete(session, params.to_delete_schema())
     if not deleted:
         raise HTTPException(status_code=404, detail="Connection object not found")
-    return JSONResponse(content={"status": "success", "message": "Connection object deleted"})
+    return JSONResponse(
+        content={"status": "success", "message": "Connection object deleted"}
+    )

@@ -36,9 +36,7 @@ class ObjectKindHandler(
         if instance is None:
             return None
 
-        for field, value in data.model_dump(
-            exclude_unset=True, exclude={"id"}
-        ).items():
+        for field, value in data.model_dump(exclude_unset=True, exclude={"id"}).items():
             setattr(instance, field, value)
 
         await session.commit()
@@ -68,10 +66,7 @@ class ObjectKindHandler(
         log.info("Получаем все записи ObjectKind")
         query = select(ObjectKind)
         result = await session.execute(query)
-        return [
-            ObjectKindSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [ObjectKindSchema.model_validate(row) for row in result.scalars().all()]
 
     async def get_paginated(
         self, session: AsyncSession, pagination: Pagination
@@ -87,10 +82,7 @@ class ObjectKindHandler(
             .limit(pagination.limit)
         )
         result = await session.execute(query)
-        return [
-            ObjectKindSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [ObjectKindSchema.model_validate(row) for row in result.scalars().all()]
 
     async def get_children_by_parent(
         self, session: AsyncSession, parent_id: int
@@ -108,7 +100,4 @@ class ObjectKindHandler(
         log.info("Получаем дочерние виды объектов для parent_id=%s", parent_id)
         query = select(ObjectKind).where(ObjectKind.parent_id == parent_id)
         result = await session.execute(query)
-        return [
-            ObjectKindSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [ObjectKindSchema.model_validate(row) for row in result.scalars().all()]

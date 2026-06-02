@@ -31,27 +31,31 @@ router = APIRouter(
 SessionDep = Depends(get_session)
 
 
-async def validate_parent_exists(parent_id: int, handler: ObjectTypeHandler, session: AsyncSession):
+async def validate_parent_exists(
+    parent_id: int, handler: ObjectTypeHandler, session: AsyncSession
+):
     """Проверяет существование родительского объекта."""
     if parent_id is None:
         return True
-    
+
     parent = await handler.get(session, parent_id)
     if parent is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Parent object type with id {parent_id} not found"
+            detail=f"Parent object type with id {parent_id} not found",
         )
     return True
 
 
-async def validate_type_exists(type_id: int, handler: ObjectTypeHandler, session: AsyncSession):
+async def validate_type_exists(
+    type_id: int, handler: ObjectTypeHandler, session: AsyncSession
+):
     """Проверяет существование типа объекта."""
     obj_type = await handler.get(session, type_id)
     if obj_type is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Object type with id {type_id} not found"
+            detail=f"Object type with id {type_id} not found",
         )
     return True
 
@@ -106,13 +110,15 @@ async def create_object_type(
     Создать новый тип объекта.
     """
     handler = ObjectTypeHandler()
-    
+
     # Проверяем существование родительского объекта
     if params.parent_id is not None:
         await validate_parent_exists(params.parent_id, handler, session)
-    
+
     result = await handler.create(session, params.to_create_schema())
-    return JSONResponse(content=result.model_dump(), status_code=status.HTTP_201_CREATED)
+    return JSONResponse(
+        content=result.model_dump(), status_code=status.HTTP_201_CREATED
+    )
 
 
 @router.put("/{id}", response_model=ObjectTypeSchema)
@@ -124,21 +130,20 @@ async def update_object_type(
     Обновить тип объекта по ID.
     """
     handler = ObjectTypeHandler()
-    
+
     # Проверяем существование обновляемого объекта
     existing = await handler.get(session, params.id)
     if existing is None:
         raise HTTPException(status_code=404, detail="Object type not found")
-    
+
     # Проверяем существование родительского объекта, если он указан
     if params.parent_id is not None:
         await validate_parent_exists(params.parent_id, handler, session)
-    
+
     result = await handler.update(session, params.to_edit_schema())
     if result is None:
         raise HTTPException(status_code=404, detail="Object type not found")
     return JSONResponse(content=result.model_dump())
-
 
 
 @router.delete("/{id}", response_model=dict)
@@ -154,7 +159,6 @@ async def delete_object_type(
     if not deleted:
         raise HTTPException(status_code=404, detail="Object type not found")
     return JSONResponse(content={"status": "success", "message": "Object type deleted"})
-
 
 
 @router.get("/parent/{parent_id}", response_model=list[ObjectTypeSchema])

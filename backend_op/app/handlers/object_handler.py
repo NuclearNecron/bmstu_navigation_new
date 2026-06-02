@@ -10,15 +10,13 @@ from app.schemas.object_models_schemas import (
     ObjectCreateSchema,
     ObjectSchema,
     ObjectUpdateSchema,
-    ObjectMapperSchema
+    ObjectMapperSchema,
 )
 
 log = logging.getLogger(__name__)
 
 
-class ObjectHandler(
-    BaseHandler[ObjectCreateSchema, ObjectUpdateSchema, ObjectSchema]
-):
+class ObjectHandler(BaseHandler[ObjectCreateSchema, ObjectUpdateSchema, ObjectSchema]):
     async def create(
         self, session: AsyncSession, data: ObjectCreateSchema
     ) -> ObjectSchema:
@@ -37,16 +35,16 @@ class ObjectHandler(
         if instance is None:
             return None
 
-        for field, value in data.model_dump(
-            exclude_unset=True, exclude={"id"}
-        ).items():
+        for field, value in data.model_dump(exclude_unset=True, exclude={"id"}).items():
             setattr(instance, field, value)
 
         await session.commit()
         await session.refresh(instance)
         return ObjectSchema.model_validate(instance)
 
-    async def get(self, session: AsyncSession, entity: GetSchema) -> ObjectSchema | None:
+    async def get(
+        self, session: AsyncSession, entity: GetSchema
+    ) -> ObjectSchema | None:
         log.info("Получаем запись Object id=%s", entity.id)
         instance = await session.get(Object, entity.id)
         if instance is None:
@@ -67,18 +65,16 @@ class ObjectHandler(
         log.info("Получаем все записи Object")
         query = select(Object)
         result = await session.execute(query)
-        return [
-            ObjectSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
-    
-    async def get_all_for_mapper(self, session: AsyncSession) -> list[ObjectMapperSchema]:
+        return [ObjectSchema.model_validate(row) for row in result.scalars().all()]
+
+    async def get_all_for_mapper(
+        self, session: AsyncSession
+    ) -> list[ObjectMapperSchema]:
         log.info("Получаем все записи Object")
         query = select(Object.id, Object.parent_id)
         result = await session.execute(query)
         return [
-            ObjectMapperSchema.model_validate(row)
-            for row in result.scalars().all()
+            ObjectMapperSchema.model_validate(row) for row in result.scalars().all()
         ]
 
     async def get_paginated(
@@ -95,10 +91,7 @@ class ObjectHandler(
             .limit(pagination.limit)
         )
         result = await session.execute(query)
-        return [
-            ObjectSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [ObjectSchema.model_validate(row) for row in result.scalars().all()]
 
     async def get_children_by_parent(
         self, session: AsyncSession, parent_id: int
@@ -116,7 +109,4 @@ class ObjectHandler(
         log.info("Получаем дочерние объекты для parent_id=%s", parent_id)
         query = select(Object).where(Object.parent_id == parent_id)
         result = await session.execute(query)
-        return [
-            ObjectSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [ObjectSchema.model_validate(row) for row in result.scalars().all()]

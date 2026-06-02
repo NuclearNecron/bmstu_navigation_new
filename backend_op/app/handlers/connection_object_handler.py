@@ -40,9 +40,7 @@ class ConnectionObjectHandler(
         if instance is None:
             return None
 
-        for field, value in data.model_dump(
-            exclude_unset=True, exclude={"id"}
-        ).items():
+        for field, value in data.model_dump(exclude_unset=True, exclude={"id"}).items():
             setattr(instance, field, value)
 
         await session.commit()
@@ -73,8 +71,7 @@ class ConnectionObjectHandler(
         query = select(ConnectionObject)
         result = await session.execute(query)
         return [
-            ConnectionObjectSchema.model_validate(row)
-            for row in result.scalars().all()
+            ConnectionObjectSchema.model_validate(row) for row in result.scalars().all()
         ]
 
     async def get_paginated(
@@ -92,6 +89,5 @@ class ConnectionObjectHandler(
         )
         result = await session.execute(query)
         return [
-            ConnectionObjectSchema.model_validate(row)
-            for row in result.scalars().all()
+            ConnectionObjectSchema.model_validate(row) for row in result.scalars().all()
         ]

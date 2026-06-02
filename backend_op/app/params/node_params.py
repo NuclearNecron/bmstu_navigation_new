@@ -125,8 +125,12 @@ def get_node_update_params(
     parent_id: int | None = Body(None, description="Идентификатор родительского узла"),
     object_id: int | None = Body(None, description="Идентификатор объекта"),
     type_id: int | None = Body(None, description="Идентификатор типа узла"),
-    short_name: str | None = Body(None, description="Краткое наименование", max_length=50),
-    full_name: str | None = Body(None, description="Полное наименование", max_length=100),
+    short_name: str | None = Body(
+        None, description="Краткое наименование", max_length=50
+    ),
+    full_name: str | None = Body(
+        None, description="Полное наименование", max_length=100
+    ),
     SVG: str | None = Body(None, description="SVG код узла"),
     x: float | None = Body(None, description="Координата X"),
     y: float | None = Body(None, description="Координата Y"),

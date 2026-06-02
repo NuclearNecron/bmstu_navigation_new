@@ -36,9 +36,7 @@ class ObjectTypeHandler(
         if instance is None:
             return None
 
-        for field, value in data.model_dump(
-            exclude_unset=True, exclude={"id"}
-        ).items():
+        for field, value in data.model_dump(exclude_unset=True, exclude={"id"}).items():
             setattr(instance, field, value)
 
         await session.commit()
@@ -68,10 +66,7 @@ class ObjectTypeHandler(
         log.info("Получаем все записи ObjectType")
         query = select(ObjectType)
         result = await session.execute(query)
-        return [
-            ObjectTypeSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [ObjectTypeSchema.model_validate(row) for row in result.scalars().all()]
 
     async def get_paginated(
         self, session: AsyncSession, pagination: Pagination
@@ -87,10 +82,7 @@ class ObjectTypeHandler(
             .limit(pagination.limit)
         )
         result = await session.execute(query)
-        return [
-            ObjectTypeSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [ObjectTypeSchema.model_validate(row) for row in result.scalars().all()]
 
     async def get_children_by_parent(
         self, session: AsyncSession, parent_id: int
@@ -108,7 +100,4 @@ class ObjectTypeHandler(
         log.info("Получаем дочерние типы объектов для parent_id=%s", parent_id)
         query = select(ObjectType).where(ObjectType.parent_id == parent_id)
         result = await session.execute(query)
-        return [
-            ObjectTypeSchema.model_validate(row)
-            for row in result.scalars().all()
-        ]
+        return [ObjectTypeSchema.model_validate(row) for row in result.scalars().all()]

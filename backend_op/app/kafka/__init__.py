@@ -1,3 +1,3 @@
 from .producer import KafkaConnection
 
-__all__ = ['KafkaConnection']
+__all__ = ["KafkaConnection"]

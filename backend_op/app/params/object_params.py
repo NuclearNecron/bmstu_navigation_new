@@ -106,7 +106,9 @@ def get_object_delete_params(
 
 
 def get_object_create_params(
-    parent_id: int | None = Body(None, description="Идентификатор родительского объекта"),
+    parent_id: int | None = Body(
+        None, description="Идентификатор родительского объекта"
+    ),
     kind_id: int = Body(..., description="Идентификатор вида объекта"),
     state_id: int = Body(..., description="Идентификатор состояния объекта"),
     short_name: str = Body(..., description="Краткое наименование", max_length=50),
@@ -141,11 +143,17 @@ def get_object_create_params(
 
 def get_object_update_params(
     id: int = Path(..., description="Идентификатор объекта", ge=1),
-    parent_id: int | None = Body(None, description="Идентификатор родительского объекта"),
+    parent_id: int | None = Body(
+        None, description="Идентификатор родительского объекта"
+    ),
     kind_id: int | None = Body(None, description="Идентификатор вида объекта"),
     state_id: int | None = Body(None, description="Идентификатор состояния объекта"),
-    short_name: str | None = Body(None, description="Краткое наименование", max_length=50),
-    full_name: str | None = Body(None, description="Полное наименование", max_length=100),
+    short_name: str | None = Body(
+        None, description="Краткое наименование", max_length=50
+    ),
+    full_name: str | None = Body(
+        None, description="Полное наименование", max_length=100
+    ),
     description: str | None = Body(None, description="Описание"),
     address: str | None = Body(None, description="Адрес объекта"),
     plan_link: str | None = Body(None, description="Ссылка на план"),

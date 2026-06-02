@@ -37,25 +37,27 @@ class Map:
             # Получаем плоский список объектов с их parent_id
             response = await client.get(f"{self.object_service_url}/objects/mapped")
             if response.status_code != 200:
-                raise Exception(f"Failed to fetch mapped objects: {response.status_code}")
-            
+                raise Exception(
+                    f"Failed to fetch mapped objects: {response.status_code}"
+                )
+
             objects_data = response.json()
-            
+
         # Строим дерево из parent_id
         tree = {}
         root_nodes = []
-        
+
         # Создаем узлы для всех объектов
         for obj in objects_data:
             obj_id = obj["id"]
             parent_id = obj.get("parent_id")
-            
+
             # Инициализируем узел
             if obj_id not in tree:
                 tree[obj_id] = {"obj": obj, "children": []}
             else:
                 tree[obj_id]["obj"] = obj
-                
+
             # Если есть родитель, добавляем как ребенка
             if parent_id:
                 if parent_id not in tree:
@@ -65,20 +67,20 @@ class Map:
                 # Корневой узел
                 if tree[obj_id] not in root_nodes:
                     root_nodes.append(tree[obj_id])
-        
+
         # Рекурсивно строим NodeTypeSchema с полной иерархией
         def build_hierarchy(node, current_path=None):
             if current_path is None:
                 current_path = {}
-            
+
             obj = node["obj"]
-            
+
             # Определяем тип объекта (предполагаем, что есть поле type)
             obj_type = obj.get("type", "unknown")
-            
+
             # Обновляем текущий путь иерархии
             path = current_path.copy()
-            
+
             # Заполняем иерархию в соответствии с типом
             hierarchy_map = {
                 "university": "uni",
@@ -89,31 +91,28 @@ class Map:
                 "floor": "floor",
                 "transit": "transit",
                 "room": "room",
-                "exit_point": "exit_point"
+                "exit_point": "exit_point",
             }
-            
+
             if obj_type in hierarchy_map:
                 key = hierarchy_map[obj_type]
                 path[key] = obj["id"]
-            
+
             # Создаем NodeType для этого объекта
-            node_type = NodeTypeSchema(
-                id=obj["id"],
-                **path
-            )
-            
+            node_type = NodeTypeSchema(id=obj["id"], **path)
+
             # Рекурсивно обрабатываем детей
             for child_node in node["children"]:
                 build_hierarchy(child_node, path)
-            
+
             return node_type
-        
+
         # Строим иерархию для всех корней
         node_types = {}
         for root in root_nodes:
             root_type = build_hierarchy(root)
             node_types[root_type.id] = root_type
-        
+
         return NodeTypesSchema(node_types=node_types)
 
     async def __get_all_nodes(self) -> NodesSchema:
@@ -122,9 +121,9 @@ class Map:
             response = await client.get(f"{self.object_service_url}/nodes/mapped")
             if response.status_code != 200:
                 raise Exception(f"Failed to fetch mapped nodes: {response.status_code}")
-            
+
             nodes_data = response.json()
-            
+
         # Собираем словарь нод в формате {node_id: NodeSchema}
         nodes_dict = {}
         for node_data in nodes_data:
@@ -137,9 +136,9 @@ class Map:
                 z=node_data["z"] if node_data["z"] is not None else 0.0,
                 latitude=node_data["latitude"],
                 longitude=node_data["longitude"],
-                name=node_data["short_name"]
+                name=node_data["short_name"],
             )
-            
+
         return NodesSchema(nodes=nodes_dict)
 
     async def __get_all_nodes_with_connections(self) -> ConnectionsSchema:
@@ -148,9 +147,9 @@ class Map:
             response = await client.get(f"{self.object_service_url}/connections/mapper")
             if response.status_code != 200:
                 raise Exception(f"Failed to fetch connections: {response.status_code}")
-            
+
             connections_data = response.json()
-            
+
         connections_dict = {}
         for node1_id, connected_nodes in connections_data.items():
             node1_id_int = int(node1_id)
@@ -161,9 +160,9 @@ class Map:
                     id=conn_data["id"],
                     node1_id=conn_data["node1_id"],
                     node2_id=conn_data["node2_id"],
-                    distance=conn_data["distance"]
+                    distance=conn_data["distance"],
                 )
-                
+
         return ConnectionsSchema(nodes=connections_dict)
 
     async def start(self):
@@ -462,21 +461,21 @@ class Map:
         grouped_route = []
         current_floor = None
         current_floor_nodes = []
-        
+
         for node in route:
             floor = node.type.floor
-            
+
             if floor != current_floor:
                 if current_floor is not None:
                     grouped_route.append({current_floor: current_floor_nodes})
                 current_floor = floor
                 current_floor_nodes = []
-            
+
             current_floor_nodes.append(node)
-        
+
         if current_floor is not None:
             grouped_route.append({current_floor: current_floor_nodes})
-            
+
         return grouped_route
 
     async def __navigate_building(self, start_node: int, target_node: int):
@@ -507,9 +506,9 @@ class Map:
                     current_node = current_node.previous
                 else:
                     result.append(current_node.current)
-                
+
                 grouped_result = self.__group_route_by_floor(result[::-1])
-                
+
                 return {"result": grouped_result, "length": length}
 
             visited.add(current_node.current.id)
