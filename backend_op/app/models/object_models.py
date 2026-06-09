@@ -17,8 +17,6 @@ class Object(db):
     state_id = Column(
         Integer, ForeignKey("object_state.id", ondelete="cascade"), nullable=False
     )
-    x_cord = Column(Float, unique=True, nullable=True)
-    y_cord = Column(Float, unique=True, nullable=True)
     short_name = Column(String(50), unique=True, nullable=False)
     full_name = Column(String(100), unique=True, nullable=False)
     description = Column(Text, nullable=True)
@@ -36,11 +34,7 @@ class Object(db):
     state_of_object = relationship(
         "ObjectState", back_populates="objects_of_state", foreign_keys="Object.state_id"
     )
-    connections = relationship(
-        "ConnectionObject",
-        back_populates="objects",
-        foreign_keys=["ConnectionObject.object_id1", "ConnectionObject.object_id2"],
-    )
+
     nodes_of_object = relationship(
         "Node", back_populates="object_of_node", foreign_keys="Node.object_id"
     )
@@ -61,11 +55,7 @@ class ConnectionObject(db):
     )
     distance = Column(Float, nullable=False)
 
-    objects = relationship(
-        "Object",
-        back_populates="connections",
-        foreign_keys=["ConnectionObject.object_id1", "ConnectionObject.object_id2"],
-    )
+
     type_of_connections = relationship(
         "ConnectionType",
         back_populates="obj_connection_of_types",

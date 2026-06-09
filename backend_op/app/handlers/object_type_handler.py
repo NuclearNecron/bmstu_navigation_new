@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.base.base_handler import BaseHandler
@@ -31,18 +31,33 @@ class ObjectTypeHandler(
     async def update(
         self, session: AsyncSession, data: ObjectTypeEditSchema
     ) -> ObjectTypeSchema | None:
-        log.info("Обновляем запись ObjectType id=%s", data.id)
+    # 1. Получаем объект (чтобы проверить существование)
         instance = await session.get(ObjectType, data.id)
         if instance is None:
+            log.warning("ObjectType с id=%s не найден", data.id)
             return None
 
-        for field, value in data.model_dump(exclude_unset=True, exclude={"id"}).items():
-            setattr(instance, field, value)
+        # 2. Берём ТОЛЬКО переданные поля (exclude_unset=True)
+        update_data = data.model_dump(exclude_unset=True, exclude={"id"})
+        if not update_data:
+            log.info("Нет данных для обновления")
+            return ObjectTypeSchema.model_validate(instance)
+
+        # 3. 🔥 Делаем UPDATE ТОЛЬКО с теми полями, которые пришли
+        #    SQLAlchemy разрешает в UPDATE указать только часть полей
+        stmt = update(ObjectType).where(ObjectType.id == data.id).values(**update_data)
+
+        log.info("UPDATE с данными: %s", update_data)
+
+        result = await session.execute(stmt)
+        if result.rowcount == 0:
+            return None
 
         await session.commit()
+
+        # 4. Получаем обновлённый объект (SELECT)
         await session.refresh(instance)
         return ObjectTypeSchema.model_validate(instance)
-
     async def get(
         self, session: AsyncSession, entity: GetSchema
     ) -> ObjectTypeSchema | None:

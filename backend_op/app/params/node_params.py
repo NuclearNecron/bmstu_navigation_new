@@ -35,7 +35,6 @@ class NodeDeleteParams(BaseModel):
 
 
 class NodeCreateParams(BaseModel):
-    parent_id: int | None = None
     object_id: int
     type_id: int
     short_name: str
@@ -53,7 +52,6 @@ class NodeCreateParams(BaseModel):
 
 class NodeUpdateParams(BaseModel):
     id: int
-    parent_id: int | None = None
     object_id: int | None = None
     type_id: int | None = None
     short_name: str | None = None
@@ -93,7 +91,6 @@ def get_node_delete_params(
 
 
 def get_node_create_params(
-    parent_id: int | None = Body(None, description="Идентификатор родительского узла"),
     object_id: int = Body(..., description="Идентификатор объекта"),
     type_id: int = Body(..., description="Идентификатор типа узла"),
     short_name: str = Body(..., description="Краткое наименование", max_length=50),
@@ -106,7 +103,6 @@ def get_node_create_params(
     longitude: float | None = Body(None, description="Долгота"),
 ) -> NodeCreateParams:
     return NodeCreateParams(
-        parent_id=parent_id,
         object_id=object_id,
         type_id=type_id,
         short_name=short_name,
@@ -122,7 +118,6 @@ def get_node_create_params(
 
 def get_node_update_params(
     id: int = Path(..., description="Идентификатор узла", ge=1),
-    parent_id: int | None = Body(None, description="Идентификатор родительского узла"),
     object_id: int | None = Body(None, description="Идентификатор объекта"),
     type_id: int | None = Body(None, description="Идентификатор типа узла"),
     short_name: str | None = Body(
@@ -140,7 +135,6 @@ def get_node_update_params(
 ) -> NodeUpdateParams:
     return NodeUpdateParams(
         id=id,
-        parent_id=parent_id,
         object_id=object_id,
         type_id=type_id,
         short_name=short_name,

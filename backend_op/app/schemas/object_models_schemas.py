@@ -17,8 +17,6 @@ class ObjectSchema(BaseModel):
     scale: str | None
     height: float | None
     SVG: str | None
-    x_cord: float | None
-    y_cord: float | None
 
 
 class ObjectMapperSchema(BaseModel):
@@ -40,8 +38,6 @@ class ObjectCreateSchema(BaseModel):
     scale: str | None = None
     height: float | None = None
     SVG: str | None = None
-    x_cord: float | None
-    y_cord: float | None
 
 
 class ObjectUpdateSchema(BaseModel):
@@ -58,8 +54,6 @@ class ObjectUpdateSchema(BaseModel):
     scale: str | None = None
     height: float | None = None
     SVG: str | None = None
-    x_cord: float | None
-    y_cord: float | None
 
 
 class ConnectionObjectSchema(BaseModel):

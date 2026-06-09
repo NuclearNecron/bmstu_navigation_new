@@ -47,8 +47,6 @@ class ObjectCreateParams(BaseModel):
     scale: str | None = None
     height: float | None = None
     SVG: str | None = None
-    x_cord: float | None
-    y_cord: float | None
 
     def to_create_schema(self) -> ObjectCreateSchema:
         return ObjectCreateSchema.model_validate(self.model_dump())
@@ -68,8 +66,6 @@ class ObjectUpdateParams(BaseModel):
     scale: str | None = None
     height: float | None = None
     SVG: str | None = None
-    x_cord: float | None
-    y_cord: float | None
 
     def to_edit_schema(self) -> ObjectUpdateSchema:
         return ObjectUpdateSchema.model_validate(self.model_dump())
@@ -120,8 +116,6 @@ def get_object_create_params(
     scale: str | None = Body(None, description="Масштаб"),
     height: float | None = Body(None, description="Высота"),
     SVG: str | None = Body(None, description="SVG код объекта"),
-    x_cord: float | None = Body(None, description="x координата на карте"),
-    y_cord: float | None = Body(None, description="y координата на карте"),
 ) -> ObjectCreateParams:
     return ObjectCreateParams(
         parent_id=parent_id,
@@ -136,8 +130,6 @@ def get_object_create_params(
         scale=scale,
         height=height,
         SVG=SVG,
-        x_cord=x_cord,
-        y_cord=y_cord,
     )
 
 
@@ -161,8 +153,6 @@ def get_object_update_params(
     scale: str | None = Body(None, description="Масштаб"),
     height: float | None = Body(None, description="Высота"),
     SVG: str | None = Body(None, description="SVG код объекта"),
-    x_cord: float | None = Body(None, description="x координата на карте"),
-    y_cord: float | None = Body(None, description="y координата на карте"),
 ) -> ObjectUpdateParams:
     return ObjectUpdateParams(
         id=id,
@@ -178,8 +168,6 @@ def get_object_update_params(
         scale=scale,
         height=height,
         SVG=SVG,
-        x_cord=x_cord,
-        y_cord=y_cord,
     )
 
 

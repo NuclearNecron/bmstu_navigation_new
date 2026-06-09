@@ -75,7 +75,7 @@ services:
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - KAFKA_TOPIC=nav-updates
-      - SYNC_HOSTS=[navigation_service:8880]
+      - SYNC_HOSTS=navigation_service:8000
     command: sh -c "sleep 10 && python main.py"
   backend_op:
     build: 

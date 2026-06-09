@@ -28,64 +28,71 @@ class Map:
         self.types = dict()
         self.nodes = dict()
         self.all_conns = dict()
-        self.exits = dict(int)
-        self.exits_list = set(int)
+        self.exits = dict()
+        self.exits_list = set()
         self.street_connections = dict()
         self.working = False
 
     async def __get_node_types(self) -> NodeTypesSchema:
         """
         Получить все типы объектов из backend_op и построить иерархию.
+        Типы определяются автоматически по глубине в дереве:
+        корень (parent_id=null) -> university,
+        его ребёнок -> campus,
+        следующий -> complex, и т.д.
         """
         async with httpx.AsyncClient() as client:
-            # Получаем плоский список объектов с их parent_id
-            response = await client.get(f"{self.object_service_url}/objects/mapped")
+            response = await client.get(f"http://{self.object_service_url}/objects/mapped")
             if response.status_code != 200:
-                raise Exception(
-                    f"Failed to fetch mapped objects: {response.status_code}"
-                )
-
+                raise Exception(f"Failed to fetch mapped objects: {response.status_code}")
             objects_data = response.json()
 
-        # Строим дерево из parent_id
+        # --- Строим дерево ---
         tree = {}
         root_nodes = []
 
-        # Создаем узлы для всех объектов
         for obj in objects_data:
             obj_id = obj["id"]
             parent_id = obj.get("parent_id")
 
-            # Инициализируем узел
-            if obj_id not in tree:
-                tree[obj_id] = {"obj": obj, "children": []}
-            else:
-                tree[obj_id]["obj"] = obj
+            tree.setdefault(obj_id, {"obj": None, "children": []})
+            tree[obj_id]["obj"] = obj
 
-            # Если есть родитель, добавляем как ребенка
             if parent_id:
-                if parent_id not in tree:
-                    tree[parent_id] = {"obj": None, "children": []}
+                tree.setdefault(parent_id, {"obj": None, "children": []})
                 tree[parent_id]["children"].append(tree[obj_id])
             else:
-                # Корневой узел
-                if tree[obj_id] not in root_nodes:
-                    root_nodes.append(tree[obj_id])
+                root_nodes.append(tree[obj_id])
 
-        # Рекурсивно строим NodeTypeSchema с полной иерархией
-        def build_hierarchy(node, current_path=None):
+        # --- Порядок типов: от университета к выходу ---
+        hierarchy_order = [
+            "university",  # 0
+            "campus",      # 1
+            "complex",     # 2
+            "corpus",      # 3
+            "building",    # 4
+            "floor",       # 5
+            "transit",     # 6
+            "room",        # 7
+            "exit_point"   # 8
+        ]
+
+        node_types = {}
+
+        def build_hierarchy(node, depth=0, current_path=None):
             if current_path is None:
                 current_path = {}
 
             obj = node["obj"]
+            if obj is None:
+                return
 
-            # Определяем тип объекта (предполагаем, что есть поле type)
-            obj_type = obj.get("type", "unknown")
+            # Определяем тип по глубине (с проверкой выхода за границы)
+            obj_type = hierarchy_order[depth] if depth < len(hierarchy_order) else "room"
 
-            # Обновляем текущий путь иерархии
             path = current_path.copy()
 
-            # Заполняем иерархию в соответствии с типом
+            # Отображение типа в поле NodeTypeSchema
             hierarchy_map = {
                 "university": "uni",
                 "campus": "campus",
@@ -99,30 +106,26 @@ class Map:
             }
 
             if obj_type in hierarchy_map:
-                key = hierarchy_map[obj_type]
-                path[key] = obj["id"]
+                path[hierarchy_map[obj_type]] = obj["id"]
 
-            # Создаем NodeType для этого объекта
+            # Сохраняем NodeType для этого объекта
             node_type = NodeTypeSchema(id=obj["id"], **path)
+            node_types[obj["id"]] = node_type
 
             # Рекурсивно обрабатываем детей
             for child_node in node["children"]:
-                build_hierarchy(child_node, path)
+                build_hierarchy(child_node, depth + 1, path)
 
-            return node_type
-
-        # Строим иерархию для всех корней
-        node_types = {}
+        # Обрабатываем все корни (глубина 0 = university)
         for root in root_nodes:
-            root_type = build_hierarchy(root)
-            node_types[root_type.id] = root_type
+            build_hierarchy(root, depth=0)
 
         return NodeTypesSchema(node_types=node_types)
 
     async def __get_all_nodes(self) -> NodesSchema:
         async with httpx.AsyncClient() as client:
             # Получаем список нод
-            response = await client.get(f"{self.object_service_url}/nodes/mapped")
+            response = await client.get(f"http://{self.object_service_url}/nodes/mapped")
             if response.status_code != 200:
                 raise Exception(f"Failed to fetch mapped nodes: {response.status_code}")
 
@@ -148,7 +151,7 @@ class Map:
     async def __get_all_nodes_with_connections(self) -> ConnectionsSchema:
         async with httpx.AsyncClient() as client:
             # Получаем все соединения узлов с помощью нового эндпоинта
-            response = await client.get(f"{self.object_service_url}/connections/mapper")
+            response = await client.get(f"http://{self.object_service_url}/connection-nodes/mapper")
             if response.status_code != 200:
                 raise Exception(f"Failed to fetch connections: {response.status_code}")
 
@@ -183,8 +186,6 @@ class Map:
                 room=nodetype.room,
                 exit_point=nodetype.exit_point,
             )
-        del nodetypes
-        gc.collect()
         nodes = await self.__get_all_nodes()
         if nodes:
             for node_id, node in nodes.nodes.items():
@@ -208,9 +209,6 @@ class Map:
                         else:
                             self.exits[complex] = [node_id]
                         self.street_connections[node_id] = dict()
-
-        del nodes
-        gc.collect()
         nodes_with_connections = await self.__get_all_nodes_with_connections()
         for node1_id, connected_nodes in nodes_with_connections.nodes.items():
             for node2_id, connection in connected_nodes.items():
@@ -233,8 +231,6 @@ class Map:
                 else:
                     self.nodes[node1_id].conns[node2_id] = self.all_conns[connection.id]
                     self.nodes[node2_id].conns[node1_id] = self.all_conns[connection.id]
-        del nodes_with_connections
-        gc.collect()
         self.working = True
 
     async def add_type(self, id: int, nodetype: NodeTypeSchema) -> None:
@@ -475,7 +471,7 @@ class Map:
                 current_floor = floor
                 current_floor_nodes = []
 
-            current_floor_nodes.append(node)
+            current_floor_nodes.append((node.id,node.name))
 
         if current_floor is not None:
             grouped_route.append({current_floor: current_floor_nodes})
@@ -615,8 +611,10 @@ class Map:
         start = self.nodes[start_node]
         target = self.nodes[target_node]
 
-        start_complex = await start.type.complex
-        target_complex = await target.type.complex
+        start_complex = start.type.complex
+        target_complex = target.type.complex
+        print(start_complex)
+        print(target_complex)
 
         if start_complex is None or target_complex is None:
             return None
@@ -625,13 +623,13 @@ class Map:
             result = await self.__navigate_building(start_node, target_node)
             return result
         else:
-            street_nav = self.__navigate_street(start_complex, target_complex)
+            street_nav = await self.__navigate_street(start_complex, target_complex)
             if street_nav is None:
                 return None
-            start_nav = self.__navigate_building(
+            start_nav = await self.__navigate_building(
                 start_node=start_node, target_node=street_nav["start_exit"]
             )
-            target_nav = self.__navigate_building(
+            target_nav = await self.__navigate_building(
                 start_node=street_nav["target_exit"], target_node=target_node
             )
             return {

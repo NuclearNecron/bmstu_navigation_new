@@ -2,12 +2,14 @@ import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from app.database.database import get_session
 from app.kafka.producer import KafkaConnection
 from app.routes import main_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -27,7 +29,7 @@ async def lifespan(app: FastAPI):
     session = await anext(get_session())
     app.state.db_session = session
 
-    await asyncio.sleep(20)
+    await asyncio.sleep(5)
 
     # Initialize Kafka connection (singleton)
     kafka_conn = KafkaConnection()
@@ -53,4 +55,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Подключение роутера статики
 app.include_router(main_router)
+
+# Раздача статических файлов через FastAPI
+STATIC_DIR = Path(__file__).parent.parent / "static"
+if STATIC_DIR.exists():
+    app.mount("/static/files", StaticFiles(directory=str(STATIC_DIR)), name="static_files")

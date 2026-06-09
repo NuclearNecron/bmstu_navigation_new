@@ -21,6 +21,7 @@ from app.params.object_type_params import (
     get_object_type_update_params,
 )
 from app.schemas.const_types_schemas import ObjectTypeSchema
+from app.base.base_schemas import GetSchema
 
 router = APIRouter(
     prefix="/object-types",
@@ -38,7 +39,7 @@ async def validate_parent_exists(
     if parent_id is None:
         return True
 
-    parent = await handler.get(session, parent_id)
+    parent = await handler.get(session,GetSchema(id = parent_id))
     if parent is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -132,13 +133,13 @@ async def update_object_type(
     handler = ObjectTypeHandler()
 
     # Проверяем существование обновляемого объекта
-    existing = await handler.get(session, params.id)
+    existing = await handler.get(session, GetSchema(id=params.id))
     if existing is None:
         raise HTTPException(status_code=404, detail="Object type not found")
 
     # Проверяем существование родительского объекта, если он указан
-    if params.parent_id is not None:
-        await validate_parent_exists(params.parent_id, handler, session)
+    # if params.parent_id is not None:
+    #     await validate_parent_exists(params.parent_id, handler, session)
 
     result = await handler.update(session, params.to_edit_schema())
     if result is None:
