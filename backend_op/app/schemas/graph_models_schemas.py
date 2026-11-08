@@ -33,7 +33,6 @@ class NodeSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    parent_id: int | None
     object_id: int
     type_id: int
     short_name: str
@@ -59,7 +58,6 @@ class NodeMapperSchema(BaseModel):
 
 
 class NodeCreateSchema(BaseModel):
-    parent_id: int | None = None
     object_id: int
     type_id: int
     short_name: str
@@ -74,7 +72,6 @@ class NodeCreateSchema(BaseModel):
 
 class NodeUpdateSchema(BaseModel):
     id: int
-    parent_id: int | None = None
     object_id: int | None = None
     type_id: int | None = None
     short_name: str | None = None

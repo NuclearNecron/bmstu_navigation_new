@@ -54,7 +54,7 @@ class ConnectionTypeUpdateParams(BaseModel):
     style: str | None = None
 
     def to_edit_schema(self) -> ConnectionTypeUpdateSchema:
-        return ConnectionTypeUpdateSchema.model_validate(self.model_dump())
+        return ConnectionTypeUpdateSchema.model_validate(self.model_dump(exclude_none=True))
 
 
 def get_connection_type_get_all_params() -> ConnectionTypeGetAllParams:

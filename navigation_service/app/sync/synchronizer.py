@@ -1,39 +1,26 @@
+# navigation_service/app/sync/synchronizer.py
 import asyncio
-import threading
-from typing import Callable, Any
-
+from typing import Callable, Any, Union
+import inspect
 
 class Synchronizer:
-    """
-    Класс для синхронного выполнения операций.
-    Обеспечивает, что только одна операция выполняется в каждый момент времени.
-    """
-
     def __init__(self):
-        self._lock = threading.Lock()
+        self._lock = asyncio.Lock()  # Use async lock for async operations
 
     def execute(self, func: Callable, *args, **kwargs) -> Any:
-        """
-        Выполнить функцию синхронно с блокировкой.
-
-        Args:
-            func: Функция для выполнения
-            *args: Позиционные аргументы
-            **kwargs: Именованные аргументы
-
-        Returns:
-            Результат выполнения функции
-
-        Raises:
-            Любое исключение, которое может выбросить функция
-        """
-        with self._lock:
-            return func(*args, **kwargs)
+        # Only for sync functions
+        # Not used if all methods are async — can be removed or kept for hybrid
+        return func(*args, **kwargs)
 
     async def execute_async(self, func: Callable, *args, **kwargs) -> Any:
         """
-        Асинхронная обертка для выполнения функции синхронно.
-        Использует asyncio.to_thread для выполнения в отдельном потоке,
-        но с блокировкой, обеспечивая последовательность операций.
+        Execute async func under lock to serialize operations.
+        func must be a coroutine function (async def).
         """
-        return await asyncio.to_thread(self.execute, func, *args, **kwargs)
+        async with self._lock:
+            if inspect.iscoroutinefunction(func):
+                return await func(*args, **kwargs)
+            else:
+                # Fallback: sync func → run in thread
+                loop = asyncio.get_running_loop()
+                return await loop.run_in_executor(None, lambda: func(*args, **kwargs))

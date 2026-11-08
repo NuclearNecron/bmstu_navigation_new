@@ -75,7 +75,7 @@ class ObjectHandler(BaseHandler[ObjectCreateSchema, ObjectUpdateSchema, ObjectSc
         query = select(Object.id, Object.parent_id)
         result = await session.execute(query)
         return [
-            ObjectMapperSchema.model_validate(row) for row in result.scalars().all()
+            ObjectMapperSchema.model_validate(row) for row in result.mappings().all()
         ]
 
     async def get_paginated(
@@ -116,46 +116,37 @@ class ObjectHandler(BaseHandler[ObjectCreateSchema, ObjectUpdateSchema, ObjectSc
         self, session: AsyncSession, object_id: int
     ) -> NodeTypeCreateParams:
         log.info("Собираем цепочку родителей для object_id=%s", object_id)
-        # Получаем полную цепочку родителей от object_id до uni
         chain = await self._get_parent_chain_recursive(session, object_id)
 
         if not chain:
             return NodeTypeCreateParams(id=object_id)
+        
+        chain = chain[::-1]
 
-        # Собираем структуру NodeTypeCreateParams
-        # Проходим по цепочке от object_id до uni и заполняем поля
-        result_params = NodeTypeCreateParams(id=object_id)
+        # ✅ chain[0] — university, chain[1] — campus, ..., chain[-1] — object_id
+        hierarchy_fields = [
+            "uni",       # 0
+            "campus",    # 1
+            "complex",   # 2
+            "corpus",    # 3
+            "building",  # 4
+            "floor",     # 5
+            "transit",   # 6
+            "room",      # 7
+            "exit_point" # 8
+        ]
 
-        # Заполняем поля в зависимости от позиции в цепочке
-        # chain[0] - это object_id, chain[-1] - это uni (parent_id is None)
-        # Проходим по цепочке и заполняем соответствующие поля
-        for i, row in enumerate(chain):
-            # Определяем поле по позиции от конца цепочки (uni - это последний)
-            # uni - index -1, campus - index -2, complex - index -3, и т.д.
-            level_index = len(chain) - 1 - i
+        params_dict = {"id": object_id}
 
-            if level_index == 0 and row.parent_id is None:
-                # Это uni (самый верхний уровень)
-                result_params.uni = row.id
-            elif level_index == 1:
-                result_params.campus = row.id
-            elif level_index == 2:
-                result_params.complex = row.id
-            elif level_index == 3:
-                result_params.corpus = row.id
-            elif level_index == 4:
-                result_params.building = row.id
-            elif level_index == 5:
-                result_params.floor = row.id
-            elif level_index == 6:
-                result_params.transit = row.id
-            elif level_index == 7:
-                result_params.room = row.id
-            elif level_index == 8:
-                result_params.exit_point = row.id
+        for i, field_name in enumerate(hierarchy_fields):
+            if i < len(chain):
+                params_dict[field_name] = int(chain[i].id)
+            else:
+                # Если цепочка короче — оставляем None (по умолчанию)
+                params_dict[field_name] = None
 
-        return result_params
-
+        return NodeTypeCreateParams(**params_dict)
+    
     async def _get_parent_chain_recursive(
         self, session: AsyncSession, object_id: int
     ) -> list:
@@ -174,7 +165,7 @@ class ObjectHandler(BaseHandler[ObjectCreateSchema, ObjectUpdateSchema, ObjectSc
                 FROM object o
                 INNER JOIN parent_chain pc ON o.id = pc.parent_id
             )
-            SELECT * FROM parent_chain ORDER BY id
+            SELECT * FROM parent_chain
         """)
 
         result = await session.execute(query, {"object_id": object_id})

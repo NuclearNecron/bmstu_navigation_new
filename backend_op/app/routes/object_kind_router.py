@@ -22,6 +22,7 @@ from app.params.object_kind_params import (
     get_object_kind_update_params,
 )
 from app.schemas.const_types_schemas import ObjectKindSchema
+from app.base.base_schemas import GetSchema
 
 router = APIRouter(
     prefix="/object-kinds",
@@ -39,7 +40,7 @@ async def validate_parent_exists(
     if parent_id is None:
         return True
 
-    parent = await handler.get(session, parent_id)
+    parent = await handler.get(session, GetSchema(id=parent_id))
     if parent is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -54,7 +55,7 @@ async def validate_type_exists(type_id: int, session: AsyncSession):
         return True
 
     handler = ObjectTypeHandler()
-    obj_type = await handler.get(session, type_id)
+    obj_type = await handler.get(session, GetSchema(id=type_id))
     if obj_type is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -138,7 +139,7 @@ async def update_object_kind(
     handler = ObjectKindHandler()
 
     # Проверяем существование обновляемого объекта
-    existing = await handler.get(session, params.id)
+    existing = await handler.get(session, GetSchema(id=params.id))
     if existing is None:
         raise HTTPException(status_code=404, detail="Object kind not found")
 

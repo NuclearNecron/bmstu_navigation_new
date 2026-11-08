@@ -19,6 +19,7 @@ from app.params.object_state_params import (
     get_object_state_update_params,
 )
 from app.schemas.const_types_schemas import ObjectStateSchema
+from app.base.base_schemas import GetSchema
 
 router = APIRouter(
     prefix="/object-states",
@@ -96,7 +97,7 @@ async def update_object_state(
     handler = ObjectStateHandler()
 
     # Проверяем существование обновляемого объекта
-    existing = await handler.get(session, params.id)
+    existing = await handler.get(session, GetSchema(id=params.id))
     if existing is None:
         raise HTTPException(status_code=404, detail="Object state not found")
 

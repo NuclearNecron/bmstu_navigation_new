@@ -75,7 +75,7 @@ class NodeHandler(BaseHandler[NodeCreateSchema, NodeUpdateSchema, NodeSchema]):
             Node.z,
         )
         result = await session.execute(query)
-        return [NodeMapperSchema.model_validate(row) for row in result.scalars().all()]
+        return [NodeMapperSchema.model_validate(row) for row in result.mappings().all()]
 
     async def get_paginated(
         self, session: AsyncSession, pagination: Pagination

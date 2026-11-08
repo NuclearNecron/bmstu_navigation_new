@@ -54,20 +54,6 @@ async def validate_parent_exists(
     return True
 
 
-async def validate_type_exists(type_id: int, session: AsyncSession):
-    """Проверяет существование типа объекта. Если type_id is None, возвращает True."""
-    if type_id is None:
-        return True
-
-    handler = ObjectTypeHandler()
-    obj_type = await handler.get(session, GetSchema(id=type_id))
-    if obj_type is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Object type with id {type_id} not found",
-        )
-    return True
-
 
 async def validate_kind_exists(kind_id: int, session: AsyncSession):
     """Проверяет существование вида объекта. Если kind_id is None, возвращает True."""
@@ -149,15 +135,15 @@ async def create_object(
     # Проверяем существование родительского объекта
     await validate_parent_exists(params.parent_id, handler, session)
 
-    # Проверяем существование типа объекта
-    await validate_type_exists(params.type_id, session)
+
 
     # Проверяем существование вида объекта
     await validate_kind_exists(params.kind_id, session)
 
     result = await handler.create(session, params.to_create_schema())
 
-    node_type_schema = await handler.get_parent_chain(session, params.id)
+    node_type_schema = await handler.get_parent_chain(session, result.id)
+    
     await request.app.state.kafka_connection.send_message(
         message={"event": "OBJECT_CREATE", "message": node_type_schema.model_dump()}
     )
@@ -168,6 +154,7 @@ async def create_object(
 
 @router.put("/{id}", response_model=ObjectSchema)
 async def update_object(
+    request: Request,
     session: AsyncSession = SessionDep,
     params: ObjectUpdateParams = Depends(get_object_update_params),
 ) -> ObjectSchema | None:
@@ -177,7 +164,7 @@ async def update_object(
     handler = ObjectHandler()
 
     # Проверяем существование обновляемого объекта
-    existing = await handler.get(session, params.id)
+    existing = await handler.get(session, GetSchema(id=params.id))
     if existing is None:
         raise HTTPException(status_code=404, detail="Object not found")
 
@@ -185,9 +172,6 @@ async def update_object(
     if params.parent_id is not None:
         await validate_parent_exists(params.parent_id, handler, session)
 
-    # Проверяем существование типа объекта, если он указан
-    if params.kind_id is not None:
-        await validate_type_exists(params.kind_id, session)
 
     # Проверяем существование вида объекта, если он указан
     if params.kind_id is not None:
@@ -196,6 +180,10 @@ async def update_object(
     result = await handler.update(session, params.to_edit_schema())
     if result is None:
         raise HTTPException(status_code=404, detail="Object not found")
+    node_type_schema = await handler.get_parent_chain(session, result.id)
+    await request.app.state.kafka_connection.send_message(
+        message={"event": "OBJECT_UPDATE", "message": node_type_schema.model_dump()}
+    )
     return JSONResponse(content=result.model_dump())
 
 

@@ -56,7 +56,7 @@ class ObjectKindUpdateParams(BaseModel):
     colour: str | None = None
 
     def to_edit_schema(self) -> ObjectKindUpdateSchema:
-        return ObjectKindUpdateSchema.model_validate(self.model_dump())
+        return ObjectKindUpdateSchema.model_validate(self.model_dump(exclude_none=True))
 
 
 class ObjectKindGetChildrenParams(BaseModel):

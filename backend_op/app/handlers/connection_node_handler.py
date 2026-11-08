@@ -102,14 +102,14 @@ class ConnectionNodeHandler(
 
         result_dict = {}
         for connection in connections:
-            node1_id = connection.node1_id
-            node2_id = connection.node2_id
+            node1_id = connection.node_id1
+            node2_id = connection.node_id2
             if node1_id not in result_dict:
                 result_dict[node1_id] = {}
             result_dict[node1_id][node2_id] = {
                 "id": connection.id,
-                "node1_id": connection.node1_id,
-                "node2_id": connection.node2_id,
+                "node1_id": connection.node_id1,
+                "node2_id": connection.node_id2,
                 "distance": connection.distance,
             }
         return result_dict

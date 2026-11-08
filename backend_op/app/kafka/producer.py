@@ -25,8 +25,7 @@ class KafkaConnection:
         """Initialize the Kafka producer."""
         if self.producer is None:
             self.producer = AIOKafkaProducer(
-                bootstrap_servers=self.bootstrap_servers,
-                value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+                bootstrap_servers=self.bootstrap_servers,   
                 max_request_size=52_428_800,
             )
             await self.producer.start()

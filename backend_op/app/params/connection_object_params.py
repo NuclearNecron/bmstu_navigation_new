@@ -52,7 +52,7 @@ class ConnectionObjectUpdateParams(BaseModel):
     distance: float | None = None
 
     def to_edit_schema(self) -> ConnectionObjectUpdateSchema:
-        return ConnectionObjectUpdateSchema.model_validate(self.model_dump())
+        return ConnectionObjectUpdateSchema.model_validate(self.model_dump(exclude_none=True))
 
 
 def get_connection_object_get_all_params() -> ConnectionObjectGetAllParams:

@@ -15,7 +15,7 @@ class KafkaConsumer:
         self,
         bootstrap_servers: str = None,
         auto_offset_reset: str = "earliest",
-        enable_auto_commit: bool = True,
+        enable_auto_commit: bool = False,
         auto_commit_interval_ms: int = 1000,
     ):
         self.bootstrap_servers = bootstrap_servers or os.getenv(
@@ -35,8 +35,9 @@ class KafkaConsumer:
                 bootstrap_servers=self.bootstrap_servers,
                 auto_offset_reset=self.auto_offset_reset,
                 enable_auto_commit=self.enable_auto_commit,
-                auto_commit_interval_ms=self.auto_commit_interval_ms,
-                value_deserializer=lambda v: json.loads(v.decode("utf-8")),
+                group_id="BMSTU",
+                # auto_commit_interval_ms=self.auto_commit_interval_ms,
+                # value_deserializer=lambda v: json.loads(v.decode("utf-8")),
             )
             await self.consumer.start()
             log.info("Kafka consumer started")
@@ -49,21 +50,27 @@ class KafkaConsumer:
             log.info("Kafka consumer stopped")
 
     async def consume(self):
-
-        await self.start()
         try:
             while True:
-                try:
-                    message = await self.consumer.getone()
-
-                    if message:
-                        log.info(f"Received message: {message}")
-                        await handle_message(message.value.decode("utf-8"))
-                    else:
-                        continue
-                except Exception as e:
-                    log.error(f"Error consuming message: {e}")
-                    # В случае ошибки продолжаем попытки получения сообщений
-                    continue
+                message = await self.consumer.getone()
+                log.info(
+                    "Received Kafka message topic=%s partition=%s offset=%s",
+                    message.topic,
+                    message.partition,
+                    message.offset,
+                )
+                await handle_message(message.value.decode("utf-8"))
+                await self.consumer.commit()
         finally:
             await self.stop()
+
+async def consume_messages():
+    # consumer = AIOKafkaConsumer(
+    #     os.getenv("KAFKA_TOPIC", "nav-updates"),
+    #     bootstrap_servers=os.getenv(
+    #         "KAFKA_BOOTSTRAP_SERVERS", "localhost:9092"
+    #     ),
+    #     group_id="bankrupt_companies_group",
+    #     auto_offset_reset="earliest",
+    # )
+    pass

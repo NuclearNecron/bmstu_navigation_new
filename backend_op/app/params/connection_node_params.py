@@ -52,7 +52,7 @@ class ConnectionNodeUpdateParams(BaseModel):
     distance: float | None = None
 
     def to_edit_schema(self) -> ConnectionNodeUpdateSchema:
-        return ConnectionNodeUpdateSchema.model_validate(self.model_dump())
+        return ConnectionNodeUpdateSchema.model_validate(self.model_dump(exclude_none=True))
 
 
 def get_connection_node_get_all_params() -> ConnectionNodeGetAllParams:
