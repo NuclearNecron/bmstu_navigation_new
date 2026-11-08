@@ -52,7 +52,7 @@ async def validate_type_exists(
     type_id: int, handler: ObjectTypeHandler, session: AsyncSession
 ):
     """Проверяет существование типа объекта."""
-    obj_type = await handler.get(session, type_id)
+    obj_type = await handler.get(session, GetSchema(id=type_id))
     if obj_type is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

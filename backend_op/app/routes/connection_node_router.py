@@ -25,6 +25,7 @@ from app.schemas.graph_models_schemas import (
     ConnectionNodeNavSchema,
     ConnectionNodeNavUpdSchema,
 )
+from app.base.base_schemas import GetSchema
 
 router = APIRouter(
     prefix="/connection-nodes",
@@ -38,7 +39,7 @@ SessionDep = Depends(get_session)
 async def validate_node_exists(node_id: int, session: AsyncSession):
     """Проверяет существование узла."""
     handler = NodeHandler()
-    node = await handler.get(session, node_id)
+    node = await handler.get(session, GetSchema(id=node_id))
     if node is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -55,7 +56,7 @@ async def validate_connection_type_exists(
         return True
 
     handler = ConnectionTypeHandler()
-    conn_type = await handler.get(session, connection_type_id)
+    conn_type = await handler.get(session, GetSchema(id=connection_type_id))
     if conn_type is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -77,7 +78,7 @@ async def get_all_connection_nodes(
     return JSONResponse(content=[obj.model_dump() for obj in result])
 
 
-@router.get("/mapper", response_model=list[ConnectionNodeSchema])
+@router.get("/mapper", response_model=dict[int, dict[int, dict]])
 async def get_all_connection_nodes_mapper(
     session: AsyncSession = SessionDep,
     params: ConnectionNodeGetAllParams = Depends(get_connection_node_get_all_params),
@@ -171,7 +172,7 @@ async def update_connection_node(
     handler = ConnectionNodeHandler()
 
     # Проверяем существование обновляемого объекта
-    existing = await handler.get(session, params.id)
+    existing = await handler.get(session, GetSchema(id=params.id))
     if existing is None:
         raise HTTPException(status_code=404, detail="Connection node not found")
 

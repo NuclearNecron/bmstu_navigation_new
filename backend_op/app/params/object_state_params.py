@@ -52,7 +52,7 @@ class ObjectStateUpdateParams(BaseModel):
     colour: str | None = None
 
     def to_edit_schema(self) -> ObjectStateUpdateSchema:
-        return ObjectStateUpdateSchema.model_validate(self.model_dump())
+        return ObjectStateUpdateSchema.model_validate(self.model_dump(exclude_none=True))
 
 
 def get_object_state_get_all_params() -> ObjectStateGetAllParams:

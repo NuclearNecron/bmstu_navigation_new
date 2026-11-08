@@ -64,7 +64,7 @@ class NodeUpdateParams(BaseModel):
     longitude: float | None = None
 
     def to_edit_schema(self) -> NodeUpdateSchema:
-        return NodeUpdateSchema.model_validate(self.model_dump())
+        return NodeUpdateSchema.model_validate(self.model_dump(exclude_none=True))
 
 
 def get_node_get_all_params() -> NodeGetAllParams:

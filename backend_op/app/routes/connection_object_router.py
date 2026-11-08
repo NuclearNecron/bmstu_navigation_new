@@ -21,6 +21,7 @@ from app.params.connection_object_params import (
     get_connection_object_update_params,
 )
 from app.schemas.object_models_schemas import ConnectionObjectSchema
+from app.base.base_schemas import GetSchema
 
 router = APIRouter(
     prefix="/connection-objects",
@@ -34,7 +35,7 @@ SessionDep = Depends(get_session)
 async def validate_object_exists(object_id: int, session: AsyncSession):
     """Проверяет существование объекта."""
     handler = ObjectHandler()
-    obj = await handler.get(session, object_id)
+    obj = await handler.get(session, GetSchema(id=object_id))
     if obj is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -51,7 +52,7 @@ async def validate_connection_type_exists(
         return True
 
     handler = ConnectionTypeHandler()
-    conn_type = await handler.get(session, connection_type_id)
+    conn_type = await handler.get(session, GetSchema(id=connection_type_id))
     if conn_type is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -143,7 +144,7 @@ async def update_connection_object(
     handler = ConnectionObjectHandler()
 
     # Проверяем существование обновляемого объекта
-    existing = await handler.get(session, params.id)
+    existing = await handler.get(session, GetSchema(id=params.id))
     if existing is None:
         raise HTTPException(status_code=404, detail="Connection object not found")
 

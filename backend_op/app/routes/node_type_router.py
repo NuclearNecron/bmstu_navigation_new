@@ -19,6 +19,7 @@ from app.params.node_type_params import (
     get_node_type_update_params,
 )
 from app.schemas.graph_models_schemas import NodeTypeSchema
+from app.base.base_schemas import GetSchema
 
 router = APIRouter(
     prefix="/node-types",
@@ -96,7 +97,7 @@ async def update_node_type(
     handler = NodeTypeHandler()
 
     # Проверяем существование обновляемого объекта
-    existing = await handler.get(session, params.id)
+    existing = await handler.get(session, GetSchema(id=params.id))
     if existing is None:
         raise HTTPException(status_code=404, detail="Node type not found")
 

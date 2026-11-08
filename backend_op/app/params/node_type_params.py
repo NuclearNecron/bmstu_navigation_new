@@ -54,7 +54,7 @@ class NodeTypeUpdateParams(BaseModel):
     size: float | None = None
 
     def to_edit_schema(self) -> NodeTypeUpdateSchema:
-        return NodeTypeUpdateSchema.model_validate(self.model_dump())
+        return NodeTypeUpdateSchema.model_validate(self.model_dump(exclude_none=True))
 
 
 def get_node_type_get_all_params() -> NodeTypeGetAllParams:

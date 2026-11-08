@@ -154,6 +154,7 @@ async def create_object(
 
 @router.put("/{id}", response_model=ObjectSchema)
 async def update_object(
+    request: Request,
     session: AsyncSession = SessionDep,
     params: ObjectUpdateParams = Depends(get_object_update_params),
 ) -> ObjectSchema | None:
@@ -163,7 +164,7 @@ async def update_object(
     handler = ObjectHandler()
 
     # Проверяем существование обновляемого объекта
-    existing = await handler.get(session, params.id)
+    existing = await handler.get(session, GetSchema(id=params.id))
     if existing is None:
         raise HTTPException(status_code=404, detail="Object not found")
 
@@ -179,6 +180,10 @@ async def update_object(
     result = await handler.update(session, params.to_edit_schema())
     if result is None:
         raise HTTPException(status_code=404, detail="Object not found")
+    node_type_schema = await handler.get_parent_chain(session, result.id)
+    await request.app.state.kafka_connection.send_message(
+        message={"event": "OBJECT_UPDATE", "message": node_type_schema.model_dump()}
+    )
     return JSONResponse(content=result.model_dump())
 
 

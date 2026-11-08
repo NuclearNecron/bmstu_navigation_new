@@ -33,7 +33,6 @@ class NodeSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    parent_id: int | None
     object_id: int
     type_id: int
     short_name: str

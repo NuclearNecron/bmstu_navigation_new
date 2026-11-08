@@ -15,7 +15,7 @@ class KafkaConsumer:
         self,
         bootstrap_servers: str = None,
         auto_offset_reset: str = "earliest",
-        enable_auto_commit: bool = True,
+        enable_auto_commit: bool = False,
         auto_commit_interval_ms: int = 1000,
     ):
         self.bootstrap_servers = bootstrap_servers or os.getenv(
@@ -50,24 +50,17 @@ class KafkaConsumer:
             log.info("Kafka consumer stopped")
 
     async def consume(self):
-
-        # await self.start()
         try:
             while True:
-                try:
-                    message = await self.consumer.getone()
-                    
-
-                    if message:
-                        log.info(f"Received message: {message}")
-                        await handle_message(message.value.decode("utf-8"))
-                        await self.consumer.commit()
-                    else:
-                        continue
-                except Exception as e:
-                    log.error(f"Error consuming message: {e}")
-                    # В случае ошибки продолжаем попытки получения сообщений
-                    continue
+                message = await self.consumer.getone()
+                log.info(
+                    "Received Kafka message topic=%s partition=%s offset=%s",
+                    message.topic,
+                    message.partition,
+                    message.offset,
+                )
+                await handle_message(message.value.decode("utf-8"))
+                await self.consumer.commit()
         finally:
             await self.stop()
 

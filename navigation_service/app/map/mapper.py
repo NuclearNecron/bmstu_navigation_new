@@ -1,4 +1,3 @@
-import typing
 import gc
 import math
 import heapq
@@ -201,6 +200,7 @@ class Map:
                 )
                 self.types[node.type_id].realizations.append(node_id)
                 if self.nodes[node_id].latitude is not None:
+                    self.street_connections[node_id] = {}
                     if self.nodes[node_id].type.complex is not None:
                         self.exits_list.add(node_id)
                         complex = self.nodes[node_id].type.complex
@@ -208,7 +208,6 @@ class Map:
                             self.exits[complex].append(node_id)
                         else:
                             self.exits[complex] = [node_id]
-                        self.street_connections[node_id] = dict()
         nodes_with_connections = await self.__get_all_nodes_with_connections()
         for node1_id, connected_nodes in nodes_with_connections.nodes.items():
             for node2_id, connection in connected_nodes.items():
@@ -578,8 +577,8 @@ class Map:
                     )
 
     async def __navigate_street(self, start_complex: int, target_complex: int):
-        start_exits = self.exits[start_complex]
-        target_exits = self.exits[target_complex]
+        start_exits = self.exits.get(start_complex, [])
+        target_exits = self.exits.get(target_complex, [])
 
         min_distance = float("inf")
         best_start_exit = None

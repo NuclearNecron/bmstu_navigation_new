@@ -63,10 +63,8 @@ services:
     command: sh -c "sleep 30 && python main.py"
   sync_service:
     build: 
-      context: ./sync_service
+        context: ./sync_service
     container_name: sync_service
-    ports:
-        - "9000:8000"
     networks:
       - bmstu_map
     depends_on:

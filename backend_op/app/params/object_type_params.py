@@ -54,7 +54,7 @@ class ObjectTypeUpdateParams(BaseModel):
     colour: str | None = None
 
     def to_edit_schema(self) -> ObjectTypeEditSchema:
-        return ObjectTypeEditSchema.model_validate(self.model_dump())
+        return ObjectTypeEditSchema.model_validate(self.model_dump(exclude_none=True))
 
 
 class ObjectTypeGetChildrenParams(BaseModel):

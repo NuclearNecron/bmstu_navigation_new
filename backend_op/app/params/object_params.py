@@ -68,7 +68,7 @@ class ObjectUpdateParams(BaseModel):
     SVG: str | None = None
 
     def to_edit_schema(self) -> ObjectUpdateSchema:
-        return ObjectUpdateSchema.model_validate(self.model_dump())
+        return ObjectUpdateSchema.model_validate(self.model_dump(exclude_none=True))
 
 
 class ObjectGetChildrenParams(BaseModel):

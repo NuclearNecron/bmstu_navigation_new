@@ -19,8 +19,6 @@ async def get_navigation(
     """
     map_instance = request.app.state.map
 
-    print(map_instance.types.keys())
-
     # Проверяем существование узлов
     if params.start_node not in map_instance.nodes:
         raise HTTPException(

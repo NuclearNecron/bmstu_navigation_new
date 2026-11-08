@@ -19,6 +19,7 @@ from app.params.connection_type_params import (
     get_connection_type_update_params,
 )
 from app.schemas.const_types_schemas import ConnectionTypeSchema
+from app.base.base_schemas import GetSchema
 
 router = APIRouter(
     prefix="/connection-types",
@@ -100,7 +101,7 @@ async def update_connection_type(
     handler = ConnectionTypeHandler()
 
     # Проверяем существование обновляемого объекта
-    existing = await handler.get(session, params.id)
+    existing = await handler.get(session, GetSchema(id=params.id))
     if existing is None:
         raise HTTPException(status_code=404, detail="Connection type not found")
 
