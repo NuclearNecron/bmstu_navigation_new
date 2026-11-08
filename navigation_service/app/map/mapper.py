@@ -274,6 +274,8 @@ class Map:
         self.all_conns[connection.id] = Connection(
             id=connection.id,
             distance=connection.distance,
+            node1_id=connection.node1_id,
+            node2_id=connection.node2_id,
         )
         node1_id = connection.node1_id
         node2_id = connection.node2_id
