@@ -3,6 +3,7 @@
 Сервисная часть приложения для хранения структуры объектов МГТУ, графа точек
 навигации и построения маршрута между двумя узлами. В репозитории находятся
 три Python-сервиса на FastAPI; отдельного web-клиента здесь нет.
+https://github.com/NuclearNecron/bmstu_navigation_new
 
 > **Дипломная версия:** была реализована в ветке
 > [`june_stable`](https://github.com/NuclearNecron/bmstu_navigation_new/tree/june_stable).
